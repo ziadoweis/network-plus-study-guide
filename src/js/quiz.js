@@ -1,4 +1,4 @@
-import {store,esc,shuffle,rnd,pick,ip2int,int2ip,maskInt,isIp,sameNet,DOMAINS,OBJ,CHAPTERS,objTag,LABS,PT_META,head,markLab,timers,clearTimers,nav,state} from './core.js';
+import {store,esc,shuffle,rnd,pick,ip2int,int2ip,maskInt,isIp,sameNet,DOMAINS,OBJ,CHAPTERS,objTag,LABS,PT_META,OBJ_VIDEO,OBJ_PRACTICE,head,markLab,timers,clearTimers,nav,state} from './core.js';
 const main=document.getElementById('main');
 const VIEWS={};
 export {VIEWS};
@@ -39,6 +39,31 @@ VIEWS.exam=function(el){
   main.onclick=e=>{if(e.target.id!=='go')return;const per={1:7,2:6,3:6,4:4,5:7};let qs=[];DOMAINS.forEach(d=>{qs=qs.concat(shuffle(QB.filter(q=>qDom(q)===d.id)).slice(0,per[d.id]))});
     runQuiz(el,shuffle(qs),{title:'Mock exam',exam:true,minutes:30})};
 };
+
+/* ---------- answer review: why right, why wrong, where to revise ---------- */
+const asArr=p=>p==null?[]:Array.isArray(p)?p:[p];
+const pageName=h=>{const l=LABS.find(x=>x.hash===h);if(l)return l.name;const i=PT_META.findIndex(p=>p.slug===h);return i>=0?`Packet Tracer lab ${i+1}`:h};
+function reviseHtml(q){
+  const o=q[0],vids=OBJ_VIDEO[o]||[],prac=OBJ_PRACTICE[o]||[];
+  const parts=[`<span>Book Ch. ${OBJ[o][1].join(', ')}</span>`,vids.length?`<span>Video Ch ${vids.join(', ')}</span>`:'',
+    `<a href="#quiz" data-requiz="o${o}">Quiz on Objective ${o}</a>`,...prac.map(h=>`<a href="#${h}">${pageName(h)}</a>`),q[6]?'<a href="#corrections">Corrections page</a>':''].filter(Boolean);
+  return `<div class="revise"><b>Revise Objective ${o} (${esc(OBJ[o][0])}):</b> ${parts.join(' · ')}</div>`;
+}
+function reviewHtml(q,p,{compact}={}){
+  const right=isRight(q,p),mine=asArr(p),ans=asArr(q[3]),why=q[5]||[];
+  const wrongPicks=mine.filter(k=>!ans.includes(k)),missedAns=ans.filter(k=>!mine.includes(k));
+  let h='';
+  if(right)h+=`<p class="fbh ok">✓ Correct: ${esc(ansText(q,q[3]))}</p><p>${esc(q[4])}</p>`;
+  else{
+    if(!mine.length)h+=`<p class="fbh no">✗ No answer given</p>`;
+    wrongPicks.forEach(k=>{h+=`<p class="fbh no">✗ Your answer: ${esc(q[2][k])}</p><p><span class="lbl">Why it's wrong:</span> ${esc(why[k]||'')}</p>`});
+    h+=`<p class="fbh ok">✓ Correct answer: ${esc(ansText(q,q[3]))}</p>${missedAns.length&&missedAns.length<ans.length?`<p class="hint">You also needed: ${esc(missedAns.map(k=>q[2][k]).join(' + '))}</p>`:''}<p><span class="lbl">Why it's right:</span> ${esc(q[4])}</p>`;
+  }
+  if(!right||!compact)h+=reviseHtml(q);
+  const others=q[2].map((t,k)=>[t,k]).filter(([t,k])=>!ans.includes(k)&&!wrongPicks.includes(k)&&why[k]);
+  if(others.length)h+=`<details class="others"><summary>Why the ${right?'other':'remaining'} options are wrong</summary><ul>${others.map(([t,k])=>`<li><b>${esc(t)}:</b> ${esc(why[k])}</li>`).join('')}</ul></details>`;
+  return h;
+}
 function runQuiz(el,qs,o){
   const items=qs.map(q=>({q,order:shuffle(q[2].map((_,k)=>k))}));
   const picked=new Array(items.length).fill(null),draft=new Array(items.length).fill(null);
@@ -50,7 +75,7 @@ function runQuiz(el,qs,o){
       if(fbOn){const good=multi?q[3].includes(k):k===q[3];const mine=multi?p.includes(k):k===p;if(good)c+=' right';else if(mine)c+=' wrong'}
       else if(multi?(cur||[]).includes(k):cur===k)c+=' sel';
       return `<button type="button" class="${c}" data-k="${k}" ${fbOn?'disabled':''}><span class="key">${pos+1}</span><span>${esc(q[2][k])}</span></button>`}).join('');
-    const fb=fbOn?`<div class="fb ${isRight(q,p)?'':'no'}"><b>${isRight(q,p)?'Correct.':'Not quite. Answer: '+esc(ansText(q,q[3]))}</b><p class="small">${esc(q[4])}</p><p class="hint">Review: ${objTag(q[0])} (${OBJ[q[0]][0]})</p></div>`:'';
+    const fb=fbOn?`<div class="fb ${isRight(q,p)?'':'no'}">${reviewHtml(q,p)}</div>`:'';
     const needN=multi?q[3].length:1;
     let nav;
     if(o.exam)nav=`<button class="btn ghost" data-act="prev" ${i===0?'disabled':''}>Previous</button><button class="btn ghost" data-act="next" ${last?'disabled':''}>Next</button><span class="sp"></span><button class="btn" data-act="submit">Submit (${picked.filter(x=>x!==null).length}/${items.length} answered)</button>`;
@@ -81,10 +106,11 @@ function runQuiz(el,qs,o){
     ${o.exam?`<p class="hint">A rough guide only: 85%+ here is a good sign of readiness. CompTIA's 100–900 scaling isn't published.</p>`:''}
     <div class="row" style="margin:14px 0"><button class="btn" data-act="retry">Try again</button></div>
     ${Object.keys(by).length>1?`<div class="tw"><table><thead><tr><th>Domain</th><th>Score</th></tr></thead><tbody>${Object.entries(by).map(([d,v])=>`<tr><td>${d}.0 ${DOMAINS[d-1].name}</td><td class="mono ${v>=85?'ok':v<60?'no':''}">${v}%</td></tr>`).join('')}</tbody></table></div>`:''}
-    ${objs.length?`<h2 style="margin-top:22px">Reread</h2><ul class="steps small">${objs.map(ob=>`<li>${objTag(ob)}: ${OBJ[ob][0]}</li>`).join('')}</ul>`:''}
-    ${missed.length?`<h2 style="margin-top:22px">What you missed</h2>${missed.map(([it,j])=>`<div class="miss"><b>${esc(it.q[1])}</b><span class="small no">Your answer: ${esc(ansText(it.q,picked[j]))}</span><span class="small ok">Correct: ${esc(ansText(it.q,it.q[3]))}</span><span class="small muted">${esc(it.q[4])}</span></div>`).join('')}`:'<p>Every answer correct.</p>'}`;
+    ${objs.length?`<h2 style="margin-top:22px">Objectives to revise</h2><ul class="steps small">${objs.map(ob=>`<li>${objTag(ob)}: ${OBJ[ob][0]}${OBJ_VIDEO[ob]?` · Video Ch ${OBJ_VIDEO[ob].join(', ')}`:''} · <a href="#quiz" data-requiz="o${ob}">retake this objective</a></li>`).join('')}</ul>`:''}
+    ${missed.length?`<h2 style="margin-top:22px">Review what you missed</h2><p class="hint">For each one: why your answer was wrong, the correct answer and why, and where to revise.</p>${missed.map(([it,j])=>`<div class="miss"><p class="qmeta">${objTag(it.q[0])}</p><b>${esc(it.q[1])}</b><div class="fb no">${reviewHtml(it.q,picked[j],{compact:true})}</div></div>`).join('')}`:'<p>Every answer correct.</p>'}`;
   }
   main.onclick=e=>{
+    const rq=e.target.closest('[data-requiz]');if(rq){e.preventDefault();clearTimers();const s=quizSet(rq.dataset.requiz);return runQuiz(el,shuffle(s.qs),s)}
     const a=e.target.closest('[data-act]'),k=e.target.closest('[data-k]'),j=e.target.closest('[data-j]');
     if(k&&!k.disabled)return choose(+k.dataset.k);
     if(j){i=+j.dataset.j;return render()}

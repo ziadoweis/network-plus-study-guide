@@ -1,6 +1,6 @@
 /* Shared state and helpers used by the shell and every lazy-loaded section. */
 export * from './util.js';
-export {DOMAINS,OBJ,CHAPTERS,objTag,LABS,CORRECTIONS} from './data.js';
+export {DOMAINS,OBJ,CHAPTERS,objTag,LABS,CORRECTIONS,OBJ_VIDEO,OBJ_PRACTICE} from './data.js';
 export {PT_META} from './pt-meta.js';
 import {store} from './util.js';
 

@@ -82,7 +82,17 @@ th{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:var(--mu
 .opt.wrong{border-color:var(--bad);color:var(--bad)}
 .opt[disabled]{cursor:default}
 .fb{margin-top:14px;border-left:2px solid var(--good);padding:4px 0 4px 14px;display:grid;gap:4px}
-.fb.no{border-color:var(--bad)}
+.fb.no{border-color:var(--bad);color:var(--ink)}
+.fb p{max-width:68ch;font-size:.93rem}
+.fbh{font-weight:600;margin-top:4px}
+.fbh.ok{color:var(--good)}.fbh.no{color:var(--bad)}
+.lbl{color:var(--muted)}
+.revise{margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:.86rem;line-height:1.7}
+.revise b{font-weight:600}
+.others{font-size:.86rem;margin-top:6px}
+.others summary{cursor:pointer;color:var(--muted)}
+.others ul{margin:6px 0 0;padding-left:1.2em;display:grid;gap:4px}
+.miss .fb{margin-top:8px}
 .qnav{display:flex;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap}
 .jump{display:flex;flex-wrap:wrap;gap:4px;margin-top:18px}
 .jump button{width:32px;height:28px;border:1px solid var(--line);background:transparent;border-radius:3px;font-family:var(--mono);font-size:.76rem;cursor:pointer}

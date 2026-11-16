@@ -41,3 +41,13 @@ export const CORRECTIONS=[
  ['Quiz Q13.6','"L2TP/IPsec is used by Cisco"','L2TP is an IETF open standard (it merged Cisco\'s L2F and Microsoft\'s PPTP). Many vendors use it.'],
  ['Quiz Q18.9','"Cloud site is fastest" to recover','The textbook answer is a hot site. A cloud site only qualifies if it is kept hot.'],
  ['Quiz','Misaligned or misnumbered rows (2.8, 5.3/15.3, 7.6, and 6.10/8.10/18.10/19.10 shown as 6.1/8.1/18.1/19.1)','Check the question against the answer key before trusting those items.']];
+
+/* Where to revise each objective: video chapters (handouts numbering) and site practice pages */
+export const OBJ_VIDEO={'1.1':[1,3],'1.2':[3,16],'1.3':[15],'1.4':[8,10],'1.5':[2,4],'1.6':[2,13,16],'1.7':[6],'1.8':[12,15],
+ '2.1':[7],'2.2':[11],'2.3':[14],'2.4':[5],'3.1':[18],'3.2':[20],'3.3':[16,18],'3.4':[9],'3.5':[13],
+ '4.1':[10,17],'4.2':[19],'4.3':[19],'5.1':[21],'5.2':[5,21],'5.3':[21],'5.4':[14,21],'5.5':[21]};
+export const OBJ_PRACTICE={'1.1':['lab-osi'],'1.4':['lab-ports'],'1.5':['lab-cables'],'1.7':['lab-subnet'],'1.8':['lab-subnet','pt-ipv6'],
+ '2.1':['pt-static-routing','pt-ospf','pt-nat'],'2.2':['lab-switch','pt-vlans'],'2.3':['pt-wireless'],'2.4':['lab-cables'],
+ '3.2':['pt-services'],'3.4':['lab-cli','pt-services','pt-intervlan-dhcp'],'3.5':['pt-first-lan'],
+ '4.2':['pt-switch-security'],'4.3':['lab-acl','pt-acl','pt-switch-security'],
+ '5.1':['lab-method'],'5.2':['lab-cables'],'5.3':['lab-cli','pt-break-fix'],'5.4':['pt-wireless'],'5.5':['lab-cli']};
