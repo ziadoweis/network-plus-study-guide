@@ -28,7 +28,8 @@ const r=await esbuild.build({
 const outs=r.metafile.outputs;
 const entry=Object.keys(outs).find(k=>outs[k].entryPoint);
 const entryName=entry.split('/').pop();
-const preload=outs[entry].imports.filter(i=>i.kind==='import-statement').map(i=>`<link rel="modulepreload" href="./assets/${i.path.split('/').pop()}">`).join('\n');
+// No modulepreload: once the service worker caches assets, Chrome warns that the preload goes unused.
+const preload='';
 
 const css=(await esbuild.transform(readFileSync(src('style.css'),'utf8'),{loader:'css',minify:true})).code.trim();
 const html=readFileSync(src('index.html'),'utf8')

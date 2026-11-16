@@ -43,6 +43,24 @@ function refreshOutline(){if(railTab!=='course')return;const cur=location.hash.s
 let pend=0;window.addEventListener('np:progress',()=>{if(!pend){pend=1;requestAnimationFrame(()=>{pend=0;refreshOutline()})}});
 rail.addEventListener('click',e=>{if(e.target.closest('a'))setMenu(false)});
 
+/* Toolbar: hide the sidebar, or read a page full screen */
+const shell=document.querySelector('.shell'),tbRail=document.getElementById('tb-rail'),tbFull=document.getElementById('tb-full');
+const TBI={side:'<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M6 2.5v11"/></svg>',
+  full:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4"/></svg>',
+  exit:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2v4H2M10 2v4h4M6 14v-4H2M10 14v-4h4"/></svg>'};
+let railHidden=!!store.get('railHidden',false),focusOn=false;
+function applyRail(){shell.classList.toggle('norail',railHidden);tbRail.innerHTML=TBI.side+(railHidden?'Show sidebar':'Hide sidebar');tbRail.setAttribute('aria-pressed',String(railHidden))}
+tbRail.addEventListener('click',()=>{railHidden=!railHidden;store.set('railHidden',railHidden);applyRail()});
+function setFocus(on){
+  focusOn=on;shell.classList.toggle('focus',on);tbFull.innerHTML=on?TBI.exit+'Exit full page':TBI.full+'Full page';tbFull.setAttribute('aria-pressed',String(on));
+  if(on){try{const r=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();if(r&&r.catch)r.catch(()=>{})}catch(e){}}
+  else if(document.fullscreenElement){try{document.exitFullscreen().catch(()=>{})}catch(e){}}
+}
+tbFull.addEventListener('click',()=>setFocus(!focusOn));
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&focusOn)setFocus(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&focusOn&&!document.fullscreenElement)setFocus(false)});
+applyRail();setFocus(false);
+
 let seq=0;
 function route(){
   clearTimers();
@@ -51,6 +69,7 @@ function route(){
   const navKey=h.startsWith('notes-')?'notes':h;
   rail.querySelectorAll('a').forEach(a=>{const on=a.dataset.r===navKey;a.classList.toggle('on',on);on?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current')});
   refreshOutline();
+  tbFull.hidden=['overview','study','quiz','exam'].includes(h);if(tbFull.hidden&&focusOn)setFocus(false);
   const my=++seq;const p=resolve(h);
   const show=v=>{if(my!==seq)return;main.innerHTML='';v(main);const h1=main.querySelector('h1');document.title=h1&&h!=='overview'?`${h1.textContent} · ${SITE_NAME}`:SITE_NAME;window.scrollTo(0,0)};
   if(VIEWS[h])return show(VIEWS[h]);

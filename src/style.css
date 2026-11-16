@@ -28,10 +28,24 @@ nav.rail{border-right:1px solid var(--line);padding:24px 14px;position:sticky;to
 .rail a{display:block;padding:4px 8px;border-radius:4px;text-decoration:none;color:var(--ink);font-size:.92rem}
 .rail a:hover{background:var(--panel)}
 .rail a.on{color:var(--accent);background:var(--panel)}
-main{min-width:0;padding:32px clamp(16px,4vw,48px) 80px;max-width:900px;width:100%}
+.content{min-width:0}
+main{min-width:0;padding:18px clamp(16px,4vw,48px) 80px;max-width:900px;width:100%}
+.topbar{display:flex;align-items:center;gap:8px;padding:14px clamp(16px,4vw,48px) 0;max-width:900px;width:100%}
+.tb{display:inline-flex;gap:6px;align-items:center;background:none;border:1px solid var(--line);border-radius:4px;padding:4px 10px;font-size:.8rem;color:var(--muted);cursor:pointer}
+.tb:hover{color:var(--ink);border-color:var(--muted)}
+.tb[hidden]{display:none}
+.tb svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.shell.norail,.shell.focus{grid-template-columns:minmax(0,1fr)}
+.shell.norail nav.rail,.shell.focus nav.rail{display:none}
+.shell.norail .topbar,.shell.norail main{margin-left:auto;margin-right:auto}
+.shell.focus .topbar,.shell.focus main{max-width:1180px;margin-left:auto;margin-right:auto}
+.shell.focus #tb-rail{visibility:hidden}
+.shell.focus .notes p,.shell.focus .nl,.shell.focus ol.steps,.shell.focus ul.steps{font-size:1rem}
 .menubtn{display:none}
 @media (max-width:820px){
   .shell{grid-template-columns:minmax(0,1fr)}
+  #tb-rail{display:none}
+  .shell.norail nav.rail{display:block}
   nav.rail{position:sticky;top:0;z-index:10;height:auto;max-height:100vh;border-right:0;border-bottom:1px solid var(--line);padding:10px 16px;background:var(--bg)}
   .railhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .rail .sub{display:none}.rail .title{padding:0}
