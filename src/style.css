@@ -53,7 +53,6 @@ main{min-width:0;padding:18px clamp(16px,4vw,48px) 80px;max-width:900px;width:10
   .navlinks{display:none}
   .rail.open{overflow:auto}
   .rail.open .navlinks{display:block;padding:6px 0 10px}
-  .itembar{position:static}
   main{padding-top:22px}
 }
 .vh{display:grid;gap:6px;margin-bottom:24px;max-width:68ch}
@@ -233,7 +232,8 @@ a.btn{text-decoration:none}
 .player .vh{margin-bottom:16px}
 .itembody h1,.itembody .eyebrow,.itembody .done-row,.itembody .labnav{display:none}
 .itembody>.vh,.itembody>article>header.vh{margin-bottom:12px}
-.itembar{position:sticky;bottom:0;margin-top:28px;padding:12px 0;border-top:1px solid var(--line);background:var(--bg);display:grid;gap:10px}
+.itembody{min-height:calc(100vh - 120px)}
+.itembar{margin-top:36px;padding:12px 0;border-top:1px solid var(--line);background:var(--bg);display:grid;gap:10px}
 .ibstatus{display:flex;gap:8px;align-items:center;font-size:.9rem}
 .ibstatus svg{width:18px;height:18px}
 .ibbtns{gap:8px}
