@@ -5,20 +5,22 @@ const main=document.getElementById('main'),rail=document.getElementById('rail');
 const VIEWS={};
 
 /* Sections load on first visit, then stay cached by the browser and the service worker. */
-const load={quiz:()=>import('./quiz.js'),labs:()=>import('./labs.js'),pt:()=>import('./pt.js'),study:()=>import('./study.js')};
+const load={quiz:()=>import('./quiz.js'),labs:()=>import('./labs.js'),pt:()=>import('./pt.js'),study:()=>import('./study.js'),notes:()=>import('./notes.js')};
 function resolve(h){
   if(VIEWS[h])return Promise.resolve(VIEWS[h]);
   if(h==='quiz'||h==='exam')return load.quiz().then(m=>m.VIEWS[h]);
   if(h==='study')return load.study().then(m=>m.VIEWS.study);
+  if(h==='notes')return load.notes().then(m=>m.VIEWS.notes);
+  if(/^notes-\d+$/.test(h))return load.notes().then(m=>m.notesView(+h.slice(6)));
   if(h.startsWith('lab-'))return load.labs().then(m=>m.VIEWS[h]);
   if(h==='pt')return load.pt().then(m=>m.VIEWS.pt);
   if(PT_META.some(p=>p.slug===h))return load.pt().then(m=>m.ptView(h));
   return null;
 }
-const KNOWN=h=>VIEWS[h]||['quiz','exam','pt','study'].includes(h)||h.startsWith('lab-')&&LABS.some(l=>l.hash===h)||PT_META.some(p=>p.slug===h);
+const KNOWN=h=>VIEWS[h]||['quiz','exam','pt','study','notes'].includes(h)||/^notes-([1-9]|1\d|2[01])$/.test(h)||h.startsWith('lab-')&&LABS.some(l=>l.hash===h)||PT_META.some(p=>p.slug===h);
 
 const NAV=[
- ['Start',[['overview','Overview'],['study','Study path']]],
+ ['Start',[['overview','Overview'],['study','Study path'],['notes','Chapter notes']]],
  ['Practice',[['quiz','Quizzes'],['exam','Mock exam']]],
  ['Labs',LABS.map(l=>[l.hash,l.name])],
  ['Packet Tracer',[['pt','All Packet Tracer labs'],...PT_META.map((p,i)=>[p.slug,`${i+1}. ${PT_SHORT[i]}`])]],
@@ -34,7 +36,8 @@ function route(){
   clearTimers();
   main.onclick=main.onchange=main.oninput=main.onkeydown=null;document.onkeydown=null;
   let h=location.hash.slice(1);if(!KNOWN(h))h='overview';
-  rail.querySelectorAll('a').forEach(a=>{const on=a.dataset.r===h;a.classList.toggle('on',on);on?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current')});
+  const navKey=h.startsWith('notes-')?'notes':h;
+  rail.querySelectorAll('a').forEach(a=>{const on=a.dataset.r===navKey;a.classList.toggle('on',on);on?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current')});
   const my=++seq;const p=resolve(h);
   const show=v=>{if(my!==seq)return;main.innerHTML='';v(main);const h1=main.querySelector('h1');document.title=h1&&h!=='overview'?`${h1.textContent} · ${SITE_NAME}`:SITE_NAME;window.scrollTo(0,0)};
   if(VIEWS[h])return show(VIEWS[h]);
@@ -73,7 +76,7 @@ VIEWS.overview=function(el){
     const g=e.target.closest('[data-go]');if(g){load.study().then(m=>m.goTo(g.dataset.go));return}
     const tk=e.target.closest('button[data-tick]');if(tk){const m=store.get('plan',{});m[tk.dataset.tick]=true;store.set('plan',m);route();return}
     const q=e.target.closest('[data-q]');if(q){state.startQuiz=q.dataset.q;location.hash='quiz';return}
-    if(e.target.id==='reset'){const b=e.target;if(b.dataset.armed){['quizBest','quizKeyBest','plan','labs','asg','pt','cap'].forEach(k=>store.set(k,{}));store.set('exams',[]);route()}else{b.dataset.armed=1;b.textContent='Click again to erase all progress'}}
+    if(e.target.id==='reset'){const b=e.target;if(b.dataset.armed){['quizBest','quizKeyBest','plan','notesRead','labs','asg','pt','cap'].forEach(k=>store.set(k,{}));store.set('exams',[]);route()}else{b.dataset.armed=1;b.textContent='Click again to erase all progress'}}
   };
 };
 
@@ -105,7 +108,7 @@ route();
 
 /* Warm the other sections when the browser is idle so navigation is instant. */
 const idle=window.requestIdleCallback||(f=>setTimeout(f,1500));
-idle(()=>{load.study();load.quiz();load.labs();load.pt()});
+idle(()=>{load.study();load.notes();load.quiz();load.labs();load.pt()});
 
 /* Offline support on real hosting (not inside sandboxed previews). */
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')&&window.self===window.top){

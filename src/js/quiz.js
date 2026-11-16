@@ -45,8 +45,8 @@ const asArr=p=>p==null?[]:Array.isArray(p)?p:[p];
 const pageName=h=>{const l=LABS.find(x=>x.hash===h);if(l)return l.name;const i=PT_META.findIndex(p=>p.slug===h);return i>=0?`Packet Tracer lab ${i+1}`:h};
 function reviseHtml(q){
   const o=q[0],vids=OBJ_VIDEO[o]||[],prac=OBJ_PRACTICE[o]||[];
-  const parts=[`<span>Book Ch. ${OBJ[o][1].join(', ')}</span>`,vids.length?`<span>Video Ch ${vids.join(', ')}</span>`:'',
-    `<a href="#quiz" data-requiz="o${o}">Quiz on Objective ${o}</a>`,...prac.map(h=>`<a href="#${h}">${pageName(h)}</a>`),q[6]?'<a href="#corrections">Corrections page</a>':''].filter(Boolean);
+  const parts=[...vids.map(v=>`<a href="#notes-${v}">Ch ${v} study notes</a>`),
+    `<a href="#quiz" data-requiz="o${o}">Quiz on Objective ${o}</a>`,...prac.map(h=>`<a href="#${h}">${pageName(h)}</a>`),q[6]?'<a href="#corrections">Corrections page</a>':'',`<span class="muted">Book Ch. ${OBJ[o][1].join(', ')}</span>`].filter(Boolean);
   return `<div class="revise"><b>Revise Objective ${o} (${esc(OBJ[o][0])}):</b> ${parts.join(' · ')}</div>`;
 }
 function reviewHtml(q,p,{compact}={}){
@@ -106,7 +106,7 @@ function runQuiz(el,qs,o){
     ${o.exam?`<p class="hint">A rough guide only: 85%+ here is a good sign of readiness. CompTIA's 100–900 scaling isn't published.</p>`:''}
     <div class="row" style="margin:14px 0"><button class="btn" data-act="retry">Try again</button></div>
     ${Object.keys(by).length>1?`<div class="tw"><table><thead><tr><th>Domain</th><th>Score</th></tr></thead><tbody>${Object.entries(by).map(([d,v])=>`<tr><td>${d}.0 ${DOMAINS[d-1].name}</td><td class="mono ${v>=85?'ok':v<60?'no':''}">${v}%</td></tr>`).join('')}</tbody></table></div>`:''}
-    ${objs.length?`<h2 style="margin-top:22px">Objectives to revise</h2><ul class="steps small">${objs.map(ob=>`<li>${objTag(ob)}: ${OBJ[ob][0]}${OBJ_VIDEO[ob]?` · Video Ch ${OBJ_VIDEO[ob].join(', ')}`:''} · <a href="#quiz" data-requiz="o${ob}">retake this objective</a></li>`).join('')}</ul>`:''}
+    ${objs.length?`<h2 style="margin-top:22px">Objectives to revise</h2><ul class="steps small">${objs.map(ob=>`<li>${objTag(ob)}: ${OBJ[ob][0]}${OBJ_VIDEO[ob]?' · '+OBJ_VIDEO[ob].map(v=>`<a href="#notes-${v}">Ch ${v} notes</a>`).join(', '):''} · <a href="#quiz" data-requiz="o${ob}">retake this objective</a></li>`).join('')}</ul>`:''}
     ${missed.length?`<h2 style="margin-top:22px">Review what you missed</h2><p class="hint">For each one: why your answer was wrong, the correct answer and why, and where to revise.</p>${missed.map(([it,j])=>`<div class="miss"><p class="qmeta">${objTag(it.q[0])}</p><b>${esc(it.q[1])}</b><div class="fb no">${reviewHtml(it.q,picked[j],{compact:true})}</div></div>`).join('')}`:'<p>Every answer correct.</p>'}`;
   }
   main.onclick=e=>{
