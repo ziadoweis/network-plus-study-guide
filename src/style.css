@@ -40,7 +40,7 @@ main{min-width:0;padding:18px clamp(16px,4vw,48px) 80px;max-width:900px;width:10
 .shell.norail .topbar,.shell.norail main{margin-left:auto;margin-right:auto}
 .shell.focus .topbar,.shell.focus main{max-width:1180px;margin-left:auto;margin-right:auto}
 .shell.focus #tb-rail{visibility:hidden}
-.shell.focus .notes p,.shell.focus .nl,.shell.focus ol.steps,.shell.focus ul.steps{font-size:1rem}
+.shell.focus .notes p,.shell.focus .nl,.shell.focus .keys,.shell.focus .traps,.shell.focus ol.steps,.shell.focus ul.steps{font-size:1rem}
 .menubtn{display:none}
 @media (max-width:820px){
   .shell{grid-template-columns:minmax(0,1fr)}
@@ -248,7 +248,17 @@ a.btn{text-decoration:none}
 .nl{margin:6px 0;padding-left:1.25em;display:grid;gap:5px;max-width:74ch;font-size:.94rem}
 .notes .tw table{margin:4px 0}
 .notes td,.notes th{font-size:.88rem}
-.traps{margin:24px 0 8px;border:1px solid var(--line);border-left:2px solid var(--bad);border-radius:0 4px 4px 0;padding:10px 14px;font-size:.92rem}
+.notes .lead{font-size:1rem;color:var(--muted);max-width:70ch}
+.notes h2{border-top:1px solid var(--line);padding-top:18px}
+.notes header+.lead+h2{border-top:0;padding-top:0}
+.notes h3{margin:18px 0 6px;font-size:.98rem;color:var(--accent);font-weight:600}
+.notes b{color:#eef1f4}
+.ex{margin:14px 0;border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:0 4px 4px 0;padding:10px 14px;background:var(--panel)}
+.ex .exh{margin:0 0 6px;font-weight:600;font-size:.9rem;color:var(--accent)}
+.ex p,.ex .nl{font-size:.92rem}
+.keys{margin:28px 0 8px;border:1px solid var(--line);border-left:2px solid var(--good);border-radius:0 4px 4px 0;padding:10px 14px;font-size:.92rem}
+.keys ul{margin:6px 0 0;padding-left:1.2em;display:grid;gap:4px}
+.traps{margin:12px 0 8px;border:1px solid var(--line);border-left:2px solid var(--bad);border-radius:0 4px 4px 0;padding:10px 14px;font-size:.92rem}
 .traps ul{margin:6px 0 0;padding-left:1.2em;display:grid;gap:4px}
 /* study path */
 .nextbox{border:1px solid var(--accent);border-radius:6px;padding:14px 16px;display:grid;gap:8px;background:var(--panel)}

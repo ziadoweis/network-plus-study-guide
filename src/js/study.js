@@ -1,4 +1,5 @@
 import {store,esc,head,nav,state,PT_META,shuffle,registry} from './core.js';
+import {LESSON_META} from './lesson-meta.js';
 const main=document.getElementById('main');
 const VIEWS={};
 
@@ -10,7 +11,7 @@ const VIEWS={};
 const R=t=>[t],RECALL=['Recall the "Memorize" points without notes'];
 const Q=o=>[`Quiz: Objective ${o}`,'quiz:o'+o,{q:'o'+o}];
 const PT=(slug,extra='')=>{const i=PT_META.findIndex(p=>p.slug===slug);return [`Packet Tracer lab ${i+1}: ${PT_META[i].title}${extra}`,slug,{pt:slug}]};
-const N=(n,id)=>[`Read the Ch ${n} study notes`,'notes-'+n,{notes:n}].concat(id?[id]:[]);
+const N=(n,id)=>[`Read Lesson ${n}`,'notes-'+n,{notes:n}].concat(id?[id]:[]);
 const FIX=what=>[`Check the ${what} correction on the Corrections page`,'corrections'];
 
 export const PLAN=[
@@ -95,10 +96,11 @@ function kindOf(t){const g=t.go||'',s=t.spec||{};
   if(/^Recall/.test(t.text))return 'recall';
   return 'task';}
 const KIND={reading:'Reading',quiz:'Quiz',lab:'Lab',pt:'Packet Tracer',recall:'Self-check',task:'Task'};
-const dur=t=>t.kind==='reading'?(t.go==='corrections'?'5 min':'15 min'):t.kind==='quiz'?(t.go==='exam'?'30 min':'10 min'):t.kind==='lab'?'15 min':t.kind==='pt'?((PT_META.find(p=>p.slug===t.go)||{}).time||'45 min'):'5 min';
+const lmin=t=>((LESSON_META.find(l=>l.n===t.spec.notes)||{}).min||15)+' min';
+const dur=t=>t.kind==='reading'?(t.spec&&t.spec.notes?lmin(t):t.go==='corrections'?'5 min':'15 min'):t.kind==='quiz'?(t.go==='exam'?'30 min':'10 min'):t.kind==='lab'?'15 min':t.kind==='pt'?((PT_META.find(p=>p.slug===t.go)||{}).time||'45 min'):'5 min';
 const moduleName=(ph,i)=>ph.phase.startsWith('Phase')?ph.phase.replace(/^Phase (\d+): /,'Module $1: '):`Module ${i+1}: Final review`;
-const itemTitle=t=>t.spec&&t.spec.notes?`Study notes: ${t.chapter.title}`:t.text;
-const shortTitle=t=>t.spec&&t.spec.notes?'Study notes':t.text.replace(/^Packet Tracer lab (\d+): /,'Packet Tracer $1: ');
+const itemTitle=t=>t.spec&&t.spec.notes?`Lesson ${t.spec.notes}: ${(LESSON_META.find(l=>l.n===t.spec.notes)||t.chapter).title}`:t.text;
+const shortTitle=t=>t.spec&&t.spec.notes?'Lesson':t.text.replace(/^Packet Tracer lab (\d+): /,'Packet Tracer $1: ');
 const ICON={
  reading:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h4.5A1.5 1.5 0 0 1 8 4.5V13a1 1 0 0 0-1-1H2zM14 3H9.5A1.5 1.5 0 0 0 8 4.5V13a1 1 0 0 1 1-1h5z"/></svg>',
  quiz:'<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2.5" width="10" height="11" rx="1.5"/><path d="M5.5 8l1.8 1.8L10.5 6.5"/></svg>',
@@ -158,11 +160,11 @@ export function itemView(id){return function(el){
 async function fillBody(t,body){
   const g=t.go||'';
   if(t.kind==='recall'){const mem=t.chapter.mem;
-    body.innerHTML=`<p>Close your notes and try to recall each point below, out loud or on paper. Then reveal them and check yourself.</p>
+    body.innerHTML=`<p>Close the lesson and try to recall each point below, out loud or on paper. Then reveal them and check yourself.</p>
     <ol class="recall">${mem.map((m,i)=>`<li><span class="rc">Point ${i+1}</span><span class="rv">${esc(m)}</span></li>`).join('')}</ol>
-    <div class="row"><button class="btn ghost" id="reveal">Reveal all</button><span class="hint">Missed some? Reread the <a href="#do-${t.chapter.tasks[0].id}">study notes</a>.</span></div>`;
+    <div class="row"><button class="btn ghost" id="reveal">Reveal all</button><span class="hint">Missed some? Reread the <a href="#do-${t.chapter.tasks[0].id}">lesson</a>.</span></div>`;
     body.querySelector('#reveal').addEventListener('click',e=>{body.querySelector('.recall').classList.toggle('shown');e.target.textContent=body.querySelector('.recall.shown')?'Hide':'Reveal all'});return}
-  if(g.startsWith('notes-')){const m=await import('./notes.js');m.notesView(+g.slice(6))(body);return}
+  if(g.startsWith('notes-')){const m=await import('./notes.js');(await m.notesView(+g.slice(6)))(body);return}
   if(g.startsWith('quiz:')){const m=await import('./quiz.js');const s=m.quizSet(g.slice(5));
     body.innerHTML=`<div class="startcard"><p><b>${esc(s.title)}</b></p><p class="hint">${s.qs.length} questions · instant feedback with explanations · pass mark 85%</p><button class="btn" id="startq">Start quiz</button></div>`;
     body.querySelector('#startq').addEventListener('click',()=>m.runQuiz(body,shuffle(s.qs),s));return}
@@ -193,7 +195,7 @@ VIEWS.study=function(el){
   function render(){
     const p=progress();const cur=p.next&&p.next.chapter;
     if(cur&&String(cur.n)!==lastCur){open.add(String(cur.n));lastCur=String(cur.n)}
-    el.innerHTML=`${head('Study path','What to do after each video','After each video chapter, work through its tasks in order: study notes, quiz, lab, Packet Tracer, recall. Notes, quizzes, labs and Packet Tracer labs tick themselves (85% on quizzes); tick the rest yourself.')}
+    el.innerHTML=`${head('Study path','What to do after each video','After each video chapter, work through its tasks in order: lesson, quiz, lab, Packet Tracer, recall. Quizzes and labs tick themselves (85% on quizzes); tick lessons and the rest yourself as you finish them.')}
     ${nextBox(p)}
     <p class="hint small" style="margin:14px 0 6px">Chapter numbers follow the video-course handouts. Watching the Coursera course instead? Match chapters by topic name.</p>
     ${p.rows.map(ph=>`<h2 class="phase">${ph.phase} <span class="muted small">${ph.span}</span></h2><p class="small muted" style="max-width:68ch">${ph.intro}</p>

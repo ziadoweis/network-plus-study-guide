@@ -26,7 +26,7 @@ const r=await esbuild.build({
   entryNames:'[name]-[hash]',chunkNames:'[name]-[hash]',metafile:true,legalComments:'none',charset:'utf8',write:true,logLevel:'warning'});
 
 const outs=r.metafile.outputs;
-const entry=Object.keys(outs).find(k=>outs[k].entryPoint);
+const entry=Object.keys(outs).find(k=>(outs[k].entryPoint||'').endsWith('js/app.js'));
 const entryName=entry.split('/').pop();
 // No modulepreload: once the service worker caches assets, Chrome warns that the preload goes unused.
 const preload='';

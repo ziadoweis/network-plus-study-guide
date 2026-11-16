@@ -22,7 +22,7 @@ function resolve(h){
 const KNOWN=h=>VIEWS[h]||/^do-[A-Za-z0-9-]+$/.test(h)||['quiz','exam','pt','study','notes'].includes(h)||/^notes-([1-9]|1\d|2[01])$/.test(h)||h.startsWith('lab-')&&LABS.some(l=>l.hash===h)||PT_META.some(p=>p.slug===h);
 
 const NAV=[
- ['Start',[['overview','Overview'],['study','Study path'],['notes','Chapter notes']]],
+ ['Start',[['overview','Overview'],['study','Study path'],['notes','Lessons']]],
  ['Practice',[['quiz','Quizzes'],['exam','Mock exam']]],
  ['Labs',LABS.map(l=>[l.hash,l.name])],
  ['Packet Tracer',[['pt','All Packet Tracer labs'],...PT_META.map((p,i)=>[p.slug,`${i+1}. ${PT_SHORT[i]}`])]],

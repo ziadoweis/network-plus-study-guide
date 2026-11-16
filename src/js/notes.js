@@ -1,20 +1,28 @@
-import {store,head,OBJ_VIDEO} from './core.js';
-import {NOTES} from './notes-data.js';
+import {store,head} from './core.js';
+import {LESSON_META} from './lesson-meta.js';
 const main=document.getElementById('main');
 const VIEWS={};
 const isRead=n=>!!store.get('notesRead',{})[n];
+/* Lesson text is split into four parts that load only when a lesson in them is opened. */
+const PARTS={1:()=>import('./lessons/part1.js'),2:()=>import('./lessons/part2.js'),3:()=>import('./lessons/part3.js'),4:()=>import('./lessons/part4.js')};
 
 VIEWS.notes=function(el){
-  el.innerHTML=`${head('Chapter notes','Study notes for each video chapter','Condensed to what the exam tests: tables, key facts and the traps CompTIA likes. Read the chapter\'s notes after each video, before its quiz. Your Sybex book is only needed for more depth.')}
-  <ul class="list">${NOTES.map(c=>`<li><a href="#notes-${c.n}">Ch ${c.n}: ${c.title}</a><span class="meta">Obj ${c.obj} · ${isRead(c.n)?'read':'not read'}</span></li>`).join('')}</ul>`;
+  const done=LESSON_META.filter(l=>isRead(l.n)).length;
+  el.innerHTML=`${head('Lessons','One lesson per video chapter',`Each lesson teaches its chapter in full: explanations, worked examples, key points and exam traps. Read it after the video and you'll have everything the quizzes, labs and Packet Tracer tasks need. ${done} of 21 read.`)}
+  <ul class="list">${LESSON_META.map(l=>`<li><a href="#notes-${l.n}">Lesson ${l.n}: ${l.title}</a><span class="meta">Obj ${l.obj} · ${l.min} min · ${isRead(l.n)?'read':'not read'}</span></li>`).join('')}</ul>`;
 };
-export function notesView(n){return function(el){
-  const i=NOTES.findIndex(c=>c.n===n),c=NOTES[i],prev=NOTES[i-1],next=NOTES[i+1];
-  el.innerHTML=`<article class="notes"><header class="vh"><p class="eyebrow">Chapter notes · Video Ch ${c.n} of 21</p><h1>${c.title}</h1>
-  <p class="hint mono small">Objectives ${c.obj} · Book Ch. ${c.book} for more depth</p></header>
-  ${c.html}
-  <label class="done-row"><input type="checkbox" id="nread" ${isRead(c.n)?'checked':''}> I've read these notes (this ticks the reading task in the study path)</label>
-  <div class="labnav"><span>${prev?`<a href="#notes-${prev.n}">← Ch ${prev.n}: ${prev.title}</a>`:'<a href="#notes">← All notes</a>'}</span><a href="#study">Study path</a><span>${next?`<a href="#notes-${next.n}">Ch ${next.n}: ${next.title} →</a>`:''}</span></div></article>`;
-  main.onchange=e=>{if(e.target.id!=='nread')return;const r=store.get('notesRead',{});if(e.target.checked)r[c.n]=true;else delete r[c.n];store.set('notesRead',r)};
-}}
+export async function notesView(n){
+  const m=LESSON_META.find(l=>l.n===n);
+  const {LESSONS}=await PARTS[m.part]();
+  const c=LESSONS.find(l=>l.n===n),i=LESSON_META.indexOf(m),prev=LESSON_META[i-1],next=LESSON_META[i+1];
+  return function(el){
+    el.innerHTML=`<article class="notes"><header class="vh"><p class="eyebrow">Lesson ${c.n} of 21 · ${m.min} min read</p><h1>${c.title}</h1>
+    <p class="hint mono small">Objectives ${c.obj} · Book Ch. ${c.book}</p></header>
+    <p class="lead">${c.intro}</p>
+    ${c.html}
+    <label class="done-row"><input type="checkbox" id="nread" ${isRead(c.n)?'checked':''}> I've read this lesson (this ticks it in the study path)</label>
+    <div class="labnav"><span>${prev?`<a href="#notes-${prev.n}">← Lesson ${prev.n}: ${prev.title}</a>`:'<a href="#notes">← All lessons</a>'}</span><a href="#study">Study path</a><span>${next?`<a href="#notes-${next.n}">Lesson ${next.n}: ${next.title} →</a>`:''}</span></div></article>`;
+    main.onchange=e=>{if(e.target.id!=='nread')return;const r=store.get('notesRead',{});if(e.target.checked)r[c.n]=true;else delete r[c.n];store.set('notesRead',r)};
+  };
+}
 export {VIEWS};
