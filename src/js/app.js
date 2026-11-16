@@ -5,19 +5,20 @@ const main=document.getElementById('main'),rail=document.getElementById('rail');
 const VIEWS={};
 
 /* Sections load on first visit, then stay cached by the browser and the service worker. */
-const load={quiz:()=>import('./quiz.js'),labs:()=>import('./labs.js'),pt:()=>import('./pt.js')};
+const load={quiz:()=>import('./quiz.js'),labs:()=>import('./labs.js'),pt:()=>import('./pt.js'),study:()=>import('./study.js')};
 function resolve(h){
   if(VIEWS[h])return Promise.resolve(VIEWS[h]);
   if(h==='quiz'||h==='exam')return load.quiz().then(m=>m.VIEWS[h]);
+  if(h==='study')return load.study().then(m=>m.VIEWS.study);
   if(h.startsWith('lab-'))return load.labs().then(m=>m.VIEWS[h]);
   if(h==='pt')return load.pt().then(m=>m.VIEWS.pt);
   if(PT_META.some(p=>p.slug===h))return load.pt().then(m=>m.ptView(h));
   return null;
 }
-const KNOWN=h=>VIEWS[h]||['quiz','exam','pt'].includes(h)||h.startsWith('lab-')&&LABS.some(l=>l.hash===h)||PT_META.some(p=>p.slug===h);
+const KNOWN=h=>VIEWS[h]||['quiz','exam','pt','study'].includes(h)||h.startsWith('lab-')&&LABS.some(l=>l.hash===h)||PT_META.some(p=>p.slug===h);
 
 const NAV=[
- ['Start',[['overview','Overview']]],
+ ['Start',[['overview','Overview'],['study','Study path']]],
  ['Practice',[['quiz','Quizzes'],['exam','Mock exam']]],
  ['Labs',LABS.map(l=>[l.hash,l.name])],
  ['Packet Tracer',[['pt','All Packet Tracer labs'],...PT_META.map((p,i)=>[p.slug,`${i+1}. ${PT_SHORT[i]}`])]],
@@ -55,7 +56,8 @@ VIEWS.overview=function(el){
   const last=exams[exams.length-1];
   const labState=id=>{const L=labs[id]||{};if(L.done)return 'done';if(L.n)return L.n+' solved';if(L.best!=null)return 'best '+L.best+'%';return '—'};
   const ptDone=PT_META.filter(p=>pt[p.slug]).length;
-  el.innerHTML=`${head('CompTIA Network+ · N10-009','Study plan and progress','Use this alongside your course and the Sybex book: after each chapter, take the matching quiz, do the lab, then build the Packet Tracer lab for that topic. Progress is saved in this browser only.')}
+  el.innerHTML=`${head('CompTIA Network+ · N10-009','Your progress','After each video chapter, follow the Study path: it lists what to read, which quiz and lab to do, and which Packet Tracer lab to build, and it highlights your next task. Progress is saved in this browser only.')}
+  <div id="nextup" style="margin-bottom:22px"><div class="nextbox"><p class="hint">Loading your next task…</p></div></div>
   <p class="small muted" style="margin-bottom:22px">Exam: up to 90 questions (multiple choice and performance-based), 90 minutes, pass mark 720 on a 100–900 scale. ${last?`Last mock exam: <b class="mono" style="color:var(--ink)">${last.pct}%</b>.`:'No mock exam taken yet.'}</p>
   <h2>Domains</h2>
   <div class="tw"><table><thead><tr><th>Domain</th><th>Weight</th><th>Book chapters</th><th>Best quiz</th><th></th></tr></thead><tbody>
@@ -65,18 +67,13 @@ VIEWS.overview=function(el){
   <ul class="list">${LABS.map(l=>`<li><a href="#${l.hash}">${l.name}<span class="desc">${l.desc}</span></a><span class="meta">Obj ${l.obj} · ${labState(l.id)}</span></li>`).join('')}</ul>
   <h2 style="margin-top:28px">Packet Tracer labs <span class="muted small">(${ptDone} of ${PT_META.length} done)</span></h2>
   <ul class="list">${PT_META.map((p,i)=>`<li><a href="#${p.slug}">${i+1}. ${p.title}</a><span class="meta">${pt[p.slug]?'done':p.time}</span></li>`).join('')}</ul>
-  <h2 style="margin-top:28px">Suggested routine</h2>
-  <ol class="steps small">
-   <li>Read a book chapter or watch the matching course module.</li>
-   <li>Take the quiz for that chapter (Quizzes → by book chapter). Read every explanation.</li>
-   <li>Spend ten minutes a day on subnetting and ports.</li>
-   <li>Build one Packet Tracer lab a week, in order. Several build on the previous file.</li>
-   <li>Every two weeks, take a mock exam and re-quiz your weakest domain. Book the exam once you're at 85%+ consistently.</li>
-  </ol>
   <p style="margin-top:30px"><button class="link" id="reset">Reset all progress</button></p>`;
+  load.study().then(m=>{const box=document.getElementById('nextup');if(box&&main.contains(box))box.innerHTML=m.nextBox(m.progress(),{showLink:true})}).catch(()=>{const box=document.getElementById('nextup');if(box)box.remove()});
   main.onclick=e=>{
+    const g=e.target.closest('[data-go]');if(g){load.study().then(m=>m.goTo(g.dataset.go));return}
+    const tk=e.target.closest('button[data-tick]');if(tk){const m=store.get('plan',{});m[tk.dataset.tick]=true;store.set('plan',m);route();return}
     const q=e.target.closest('[data-q]');if(q){state.startQuiz=q.dataset.q;location.hash='quiz';return}
-    if(e.target.id==='reset'){const b=e.target;if(b.dataset.armed){['quizBest','labs','asg','pt','cap'].forEach(k=>store.set(k,{}));store.set('exams',[]);route()}else{b.dataset.armed=1;b.textContent='Click again to erase all progress'}}
+    if(e.target.id==='reset'){const b=e.target;if(b.dataset.armed){['quizBest','quizKeyBest','plan','labs','asg','pt','cap'].forEach(k=>store.set(k,{}));store.set('exams',[]);route()}else{b.dataset.armed=1;b.textContent='Click again to erase all progress'}}
   };
 };
 
@@ -108,7 +105,7 @@ route();
 
 /* Warm the other sections when the browser is idle so navigation is instant. */
 const idle=window.requestIdleCallback||(f=>setTimeout(f,1500));
-idle(()=>{load.quiz();load.labs();load.pt()});
+idle(()=>{load.study();load.quiz();load.labs();load.pt()});
 
 /* Offline support on real hosting (not inside sandboxed previews). */
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')&&window.self===window.top){

@@ -9,10 +9,10 @@ const isMulti=q=>Array.isArray(q[3]);
 const isRight=(q,p)=>isMulti(q)?Array.isArray(p)&&p.length===q[3].length&&p.every(x=>q[3].includes(x)):p===q[3];
 const ansText=(q,p)=>p==null?'(no answer)':(Array.isArray(p)?p:[p]).map(k=>q[2][k]).join(' + ');
 function quizSet(key){
-  if(key==='all')return {qs:QB,title:'All domains'};
-  if(key[0]==='d'){const d=+key.slice(1);return {qs:QB.filter(q=>qDom(q)===d),title:`${d}.0 ${DOMAINS[d-1].name}`,domain:d}}
-  if(key[0]==='c'){const c=+key.slice(1);return {qs:QB.filter(q=>OBJ[q[0]][1].includes(c)),title:`Book Ch. ${c}: ${CHAPTERS[c-1]}`}}
-  if(key[0]==='o'){const o=key.slice(1);return {qs:QB.filter(q=>q[0]===o),title:`Objective ${o}: ${OBJ[o][0]}`}}
+  if(key==='all')return {qs:QB,title:'All domains',key};
+  if(key[0]==='d'){const d=+key.slice(1);return {qs:QB.filter(q=>qDom(q)===d),title:`${d}.0 ${DOMAINS[d-1].name}`,domain:d,key}}
+  if(key[0]==='c'){const c=+key.slice(1);return {qs:QB.filter(q=>OBJ[q[0]][1].includes(c)),title:`Book Ch. ${c}: ${CHAPTERS[c-1]}`,key}}
+  if(key[0]==='o'){const o=key.slice(1);return {qs:QB.filter(q=>q[0]===o),title:`Objective ${o}: ${OBJ[o][0]}`,key}}
 }
 VIEWS.quiz=function(el){
   if(state.startQuiz){const s=quizSet(state.startQuiz);state.startQuiz=null;return runQuiz(el,shuffle(s.qs),s)}
@@ -72,6 +72,7 @@ function runQuiz(el,qs,o){
     const right=items.filter((it,j)=>isRight(it.q,picked[j])).length,pct=Math.round(right/items.length*100);
     const by={};DOMAINS.forEach(d=>{const ds=items.map((it,j)=>[it,j]).filter(([it])=>qDom(it.q)===d.id);if(ds.length)by[d.id]=Math.round(ds.filter(([it,j])=>isRight(it.q,picked[j])).length/ds.length*100)});
     if(o.domain){const b=store.get('quizBest',{});b[o.domain]=Math.max(b[o.domain]??0,pct);store.set('quizBest',b)}
+    if(o.key){const kb=store.get('quizKeyBest',{});kb[o.key]=Math.max(kb[o.key]??0,pct);store.set('quizKeyBest',kb)}
     if(o.exam){const ex=store.get('exams',[]);ex.push({date:new Date().toISOString().slice(0,10),pct,by});store.set('exams',ex)}
     const missed=items.map((it,j)=>[it,j]).filter(([it,j])=>!isRight(it.q,picked[j]));
     const objs=[...new Set(missed.map(([it])=>it.q[0]))].sort();
