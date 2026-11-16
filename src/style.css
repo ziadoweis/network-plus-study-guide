@@ -20,7 +20,7 @@ button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 ::selection{background:#2d4a5e}
 
-.shell{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100%}
+.shell{display:grid;grid-template-columns:300px minmax(0,1fr);min-height:100%}
 nav.rail{border-right:1px solid var(--line);padding:24px 14px;position:sticky;top:0;align-self:start;height:100vh;overflow:auto}
 .rail .title{font-weight:600;padding:0 8px 2px}
 .rail .sub{font-family:var(--mono);font-size:.75rem;color:var(--muted);padding:0 8px 14px}
@@ -39,6 +39,7 @@ main{min-width:0;padding:32px clamp(16px,4vw,48px) 80px;max-width:900px;width:10
   .navlinks{display:none}
   .rail.open{overflow:auto}
   .rail.open .navlinks{display:block;padding:6px 0 10px}
+  .itembar{position:static}
   main{padding-top:22px}
 }
 .vh{display:grid;gap:6px;margin-bottom:24px;max-width:68ch}
@@ -187,6 +188,46 @@ ol.steps,ul.steps{margin:6px 0;padding-left:1.4em;display:grid;gap:6px;max-width
 .reveal summary{cursor:pointer;color:var(--accent)}
 .labnav{display:flex;gap:12px;justify-content:space-between;margin-top:34px;padding-top:14px;border-top:1px solid var(--line);font-size:.9rem;flex-wrap:wrap}
 .done-row{margin-top:24px;display:flex;gap:8px;align-items:center}
+/* course sidebar (Coursera-style outline) */
+.railtabs{display:flex;border-bottom:1px solid var(--line);margin:4px 0 10px}
+.railtabs button{flex:1;background:none;border:0;border-bottom:2px solid transparent;padding:8px 4px;cursor:pointer;color:var(--muted);font-size:.88rem}
+.railtabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+.railpanel[hidden]{display:none}
+.cprog{padding:4px 8px 12px;display:grid;gap:6px;font-size:.86rem}
+.cprog .hint{font-size:.8rem}
+.rail .cprog a{display:inline;padding:0;color:var(--accent);background:none}
+a.btn{text-decoration:none}
+.mod{border-top:1px solid var(--line)}
+.mod>summary{display:flex;gap:8px;align-items:center;padding:10px 8px;cursor:pointer;list-style:none;font-weight:600;font-size:.88rem}
+.mod>summary::-webkit-details-marker{display:none}
+.mod>summary::after{content:"\25BE";color:var(--muted);font-weight:400;transition:transform .15s}
+.mod:not([open])>summary::after{transform:rotate(-90deg)}
+.mod .mt{flex:1}
+.mod .mc{font-size:.74rem;color:var(--muted);font-weight:400}.mod .mc.ok{color:var(--good)}
+.lesson{padding:0 0 8px}
+.lesson .lt{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:6px 8px 4px;margin:0}
+.rail a.oi{display:flex;gap:10px;align-items:flex-start;padding:7px 8px 7px 10px;border-left:3px solid transparent;border-radius:0 4px 4px 0;color:var(--ink);text-decoration:none}
+.rail a.oi:hover{background:var(--panel)}
+.rail a.oi.cur{background:var(--panel);border-left-color:var(--accent)}
+.rail a.oi.cur .on{font-weight:600}
+.oi svg{width:16px;height:16px;flex:none;margin-top:2px;fill:none;stroke:var(--muted);stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.oi .ot{display:grid;gap:1px;min-width:0}
+.oi .on{font-size:.85rem;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.oi .om{font-size:.72rem;color:var(--muted)}
+.oi.done .om{color:var(--good)}
+/* course player */
+.player .vh{margin-bottom:16px}
+.itembody h1,.itembody .eyebrow,.itembody .done-row,.itembody .labnav{display:none}
+.itembody>.vh,.itembody>article>header.vh{margin-bottom:12px}
+.itembar{position:sticky;bottom:0;margin-top:28px;padding:12px 0;border-top:1px solid var(--line);background:var(--bg);display:grid;gap:10px}
+.ibstatus{display:flex;gap:8px;align-items:center;font-size:.9rem}
+.ibstatus svg{width:18px;height:18px}
+.ibbtns{gap:8px}
+.startcard{border:1px solid var(--line);border-radius:6px;padding:16px;display:grid;gap:8px;justify-items:start;max-width:520px}
+.recall{display:grid;gap:8px;padding-left:1.3em;margin:12px 0;max-width:72ch}
+.recall .rc{color:var(--muted);font-size:.85rem}
+.recall .rv{display:none}
+.recall.shown .rc{display:none}.recall.shown .rv{display:inline}
 /* chapter notes */
 .notes h2{margin-top:26px;margin-bottom:8px;font-size:1.08rem}
 .notes p{margin:8px 0;max-width:72ch;font-size:.94rem}

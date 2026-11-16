@@ -1,4 +1,4 @@
-import {store,esc,head,nav,state,PT_META} from './core.js';
+import {store,esc,head,nav,state,PT_META,shuffle,registry} from './core.js';
 const main=document.getElementById('main');
 const VIEWS={};
 
@@ -79,12 +79,100 @@ function autoDone(a){
   return false;
 }
 export function progress(){
-  const man=store.get('plan',{});let total=0,done=0,next=null;
-  const rows=PLAN.map(ph=>({...ph,chapters:ph.chapters.map(c=>{
-    let off=0;const tasks=c.tasks.map((t,k)=>{const id=t[3]?(off++,t[3]):tid(c,k-off),auto=autoDone(t[2]),d=auto||!!man[id];total++;if(d)done++;const r={id,text:t[0],go:t[1],hasAuto:!!t[2],auto,done:d};if(!d&&!next)next={chapter:c,phase:ph,task:r};return r});
+  const man=store.get('plan',{});let total=0,done=0,next=null;const items=[];
+  const rows=PLAN.map((ph,pi)=>({...ph,pi,chapters:ph.chapters.map(c=>{
+    let off=0;const tasks=c.tasks.map((t,k)=>{const id=t[3]?(off++,t[3]):tid(c,k-off),spec=t[2]||null,auto=autoDone(spec),d=auto||!!man[id];total++;if(d)done++;
+      const r={id,text:t[0],go:t[1],spec,hasAuto:!!spec,auto,done:d,chapter:c,pi};r.kind=kindOf(r);r.manual=!spec||!!spec.notes||!!spec.pt;
+      if(!d&&!next)next={chapter:c,phase:ph,task:r};items.push(r);return r});
     return {...c,tasks,doneN:tasks.filter(t=>t.done).length}})}));
-  return {rows,total,done,next};
+  return {rows,total,done,next,items};
 }
+function kindOf(t){const g=t.go||'',s=t.spec||{};
+  if(s.notes||g.startsWith('notes-')||g==='corrections')return 'reading';
+  if(g.startsWith('quiz')||g==='exam')return 'quiz';
+  if(g.startsWith('pt-'))return 'pt';
+  if(g.startsWith('lab-'))return 'lab';
+  if(/^Recall/.test(t.text))return 'recall';
+  return 'task';}
+const KIND={reading:'Reading',quiz:'Quiz',lab:'Lab',pt:'Packet Tracer',recall:'Self-check',task:'Task'};
+const dur=t=>t.kind==='reading'?(t.go==='corrections'?'5 min':'15 min'):t.kind==='quiz'?(t.go==='exam'?'30 min':'10 min'):t.kind==='lab'?'15 min':t.kind==='pt'?((PT_META.find(p=>p.slug===t.go)||{}).time||'45 min'):'5 min';
+const moduleName=(ph,i)=>ph.phase.startsWith('Phase')?ph.phase.replace(/^Phase (\d+): /,'Module $1: '):`Module ${i+1}: Final review`;
+const itemTitle=t=>t.spec&&t.spec.notes?`Study notes: ${t.chapter.title}`:t.text;
+const shortTitle=t=>t.spec&&t.spec.notes?'Study notes':t.text.replace(/^Packet Tracer lab (\d+): /,'Packet Tracer $1: ');
+const ICON={
+ reading:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h4.5A1.5 1.5 0 0 1 8 4.5V13a1 1 0 0 0-1-1H2zM14 3H9.5A1.5 1.5 0 0 0 8 4.5V13a1 1 0 0 1 1-1h5z"/></svg>',
+ quiz:'<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2.5" width="10" height="11" rx="1.5"/><path d="M5.5 8l1.8 1.8L10.5 6.5"/></svg>',
+ lab:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2h4M7 2v4L3.5 12.5a1 1 0 0 0 .9 1.5h7.2a1 1 0 0 0 .9-1.5L9 6V2M5 10h6"/></svg>',
+ pt:'<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="3.5" r="1.6"/><circle cx="3.5" cy="12" r="1.6"/><circle cx="12.5" cy="12" r="1.6"/><path d="M7.2 4.9 4.3 10.6M8.8 4.9l2.9 5.7M5.1 12h5.8"/></svg>',
+ recall:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12.5h4M6.5 14.5h3M8 1.8a4.2 4.2 0 0 0-2.6 7.5c.5.4.9 1 .9 1.6v.3h3.4v-.3c0-.6.4-1.2.9-1.6A4.2 4.2 0 0 0 8 1.8z"/></svg>',
+ task:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 14.5V2M3.5 2.5h8.5l-1.6 3 1.6 3H3.5"/></svg>',
+ check:'<svg class="ck" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7.2" style="fill:var(--good);stroke:none"/><path d="M4.7 8.3l2.2 2.2 4.4-4.6" style="fill:none;stroke:#0f1a14;stroke-width:1.9"/></svg>'};
+function reqText(t){const s=t.spec||{};
+  if(s.q){const kb=store.get('quizKeyBest',{});let b=kb[s.q];if(s.q[0]==='d'&&b==null)b=store.get('quizBest',{})[+s.q.slice(1)];return `Completes automatically when you score 85% or more. ${b==null?'Not attempted yet.':'Best so far: '+b+'%.'}`}
+  if(s.lab){const L=store.get('labs',{})[s.lab]||{};
+    if(s.best)return `Completes automatically at ${s.best}% or more. ${L.best==null?'Not attempted yet.':'Best so far: '+L.best+'%.'}`;
+    const need={switch:'all 8 switch objectives',acl:'both firewall scenarios at 100%',method:'both parts at 100%',cli:'all six tickets solved'}[s.lab]||'the lab';
+    return `Completes automatically with ${need}.${s.lab==='cli'?` Solved so far: ${(L.solved||[]).length} of 6.`:''}`}
+  if(s.cli){const sv=(store.get('labs',{}).cli||{}).solved||[];return `Completes automatically when tickets ${s.cli.map(x=>x.slice(1)).join(' and ')} are solved. Solved so far: ${s.cli.filter(x=>sv.includes(x)).length} of ${s.cli.length}.`}
+  if(s.domains){const b=store.get('quizBest',{});return `Completes automatically when every domain quiz is at 85%+. Now: ${[1,2,3,4,5].map(d=>`${d}.0 ${b[d]==null?'—':b[d]+'%'}`).join(' · ')}.`}
+  if(s.mocks){const ex=store.get('exams',[]);return `Completes automatically after ${s.mocks} mock exams at 85%+ on different days. So far: ${new Set(ex.filter(e=>e.pct>=85).map(e=>e.date)).size}.`}
+  return 'Mark this item as completed when you\'re done.';}
+function setManual(t,val){
+  if(t.spec&&t.spec.notes){const r=store.get('notesRead',{});if(val)r[t.spec.notes]=true;else delete r[t.spec.notes];store.set('notesRead',r)}
+  else if(t.spec&&t.spec.pt){const d=store.get('pt',{});d[t.spec.pt]=val;store.set('pt',d)}
+  else{const m=store.get('plan',{});if(val)m[t.id]=true;else delete m[t.id];store.set('plan',m)}}
+
+/* ---------- course outline (sidebar) ---------- */
+const openMods=new Set();let lastAuto=null;
+export function renderOutline(box,curId){
+  const p=progress(),pct=Math.round(p.done/p.total*100);
+  const cur=p.items.find(t=>t.id===curId),focus=cur||(p.next&&p.next.task);
+  const fm=focus?String(focus.pi):null;if(fm!==null&&fm!==lastAuto){openMods.add(fm);lastAuto=fm}
+  box.innerHTML=`<div class="cprog"><div class="row"><span>Course progress</span><span class="sp"></span><b class="mono">${pct}%</b></div><div class="pbar"><span style="width:${pct}%"></span></div><p class="hint">${p.done} of ${p.total} items complete${p.next?` · <a href="#do-${p.next.task.id}">Resume</a>`:''}</p></div>
+  ${p.rows.map((ph,i)=>{const all=ph.chapters.flatMap(c=>c.tasks),d=all.filter(t=>t.done).length;
+    return `<details class="mod" data-m="${i}" ${openMods.has(String(i))?'open':''}><summary><span class="mt">${moduleName(ph,i)}</span><span class="mc mono ${d===all.length?'ok':''}">${d}/${all.length}</span></summary>
+    ${ph.chapters.map(c=>`<div class="lesson"><p class="lt">${label(c.n)}: ${esc(c.title)}</p>${c.tasks.map(t=>`<a class="oi ${t.done?'done':''} ${t.id===curId?'cur':''}" href="#do-${t.id}" ${t.id===curId?'aria-current="page"':''}>${t.done?ICON.check:ICON[t.kind]}<span class="ot"><span class="on">${esc(shortTitle(t))}</span><span class="om">${t.done?'Completed':KIND[t.kind]+' · '+dur(t)}</span></span></a>`).join('')}</div>`).join('')}</details>`}).join('')}`;
+  box.querySelectorAll('details.mod').forEach(d=>d.addEventListener('toggle',()=>{d.open?openMods.add(d.dataset.m):openMods.delete(d.dataset.m)}));
+  const c=box.querySelector('.oi.cur');if(c){const r=c.getBoundingClientRect(),rr=box.closest('nav').getBoundingClientRect();if(r.top<rr.top||r.bottom>rr.bottom)c.scrollIntoView({block:'center'})}
+}
+
+/* ---------- course player (item page) ---------- */
+let activeBar=null;
+if(typeof window!=='undefined')window.addEventListener('np:progress',()=>{if(activeBar&&activeBar.isConnected)activeBar._render()});
+export function itemView(id){return function(el){
+  const p=progress(),idx=p.items.findIndex(t=>t.id===id);
+  if(idx<0){el.innerHTML=`${head('Course','Item not found','')}<p><a href="#study">Open the study path</a></p>`;return}
+  const t=p.items[idx],ph=p.rows[t.pi],prev=p.items[idx-1],nxt=p.items[idx+1];
+  el.innerHTML=`<div class="player"><header class="vh"><p class="eyebrow">${moduleName(ph,t.pi)} · ${label(t.chapter.n)}: ${esc(t.chapter.title)}</p><h1>${esc(itemTitle(t))}</h1><p class="hint small">${KIND[t.kind]} · ${dur(t)}</p></header>
+  <div class="itembody" id="itembody"><p class="hint">Loading…</p></div><div class="itembar" id="itembar"></div></div>`;
+  const body=el.querySelector('#itembody'),bar=el.querySelector('#itembar');
+  bar._render=()=>{const f=progress().items[idx];
+    bar.innerHTML=`<div class="ibstatus">${f.done?`${ICON.check}<b class="ok">Completed</b>`:`<span class="hint">${reqText(f)}</span>`}</div>
+    <div class="row ibbtns">${f.manual&&!f.done?'<button class="btn" id="mk">Mark as completed</button>':''}${f.manual&&f.done?'<button class="link" id="unmk">Mark as not completed</button>':''}<span class="sp"></span>
+    ${prev?`<a class="btn ghost" href="#do-${prev.id}">← Previous</a>`:''}${nxt?`<a class="btn ${f.done?'':'ghost'}" href="#do-${nxt.id}">Next item →</a>`:'<a class="btn ghost" href="#study">Back to study path</a>'}</div>`;
+    const mk=bar.querySelector('#mk'),un=bar.querySelector('#unmk');
+    if(mk)mk.addEventListener('click',()=>setManual(f,true));if(un)un.addEventListener('click',()=>setManual(f,false))};
+  activeBar=bar;bar._render();
+  fillBody(t,body).catch(()=>{body.innerHTML='<p>This item couldn\'t load. Check your connection and reload.</p>'});
+}}
+async function fillBody(t,body){
+  const g=t.go||'';
+  if(t.kind==='recall'){const mem=t.chapter.mem;
+    body.innerHTML=`<p>Close your notes and try to recall each point below, out loud or on paper. Then reveal them and check yourself.</p>
+    <ol class="recall">${mem.map((m,i)=>`<li><span class="rc">Point ${i+1}</span><span class="rv">${esc(m)}</span></li>`).join('')}</ol>
+    <div class="row"><button class="btn ghost" id="reveal">Reveal all</button><span class="hint">Missed some? Reread the <a href="#do-${t.chapter.tasks[0].id}">study notes</a>.</span></div>`;
+    body.querySelector('#reveal').addEventListener('click',e=>{body.querySelector('.recall').classList.toggle('shown');e.target.textContent=body.querySelector('.recall.shown')?'Hide':'Reveal all'});return}
+  if(g.startsWith('notes-')){const m=await import('./notes.js');m.notesView(+g.slice(6))(body);return}
+  if(g.startsWith('quiz:')){const m=await import('./quiz.js');const s=m.quizSet(g.slice(5));
+    body.innerHTML=`<div class="startcard"><p><b>${esc(s.title)}</b></p><p class="hint">${s.qs.length} questions · instant feedback with explanations · pass mark 85%</p><button class="btn" id="startq">Start quiz</button></div>`;
+    body.querySelector('#startq').addEventListener('click',()=>m.runQuiz(body,shuffle(s.qs),s));return}
+  if(g==='quiz'||g==='exam'){const m=await import('./quiz.js');m.VIEWS[g](body);return}
+  if(g.startsWith('lab-')){const m=await import('./labs.js');m.VIEWS[g](body);return}
+  if(g.startsWith('pt-')){const m=await import('./pt.js');m.ptView(g)(body);return}
+  if(g==='corrections'&&registry.VIEWS.corrections){registry.VIEWS.corrections(body);return}
+  body.innerHTML=`<p>${esc(t.text)}.</p>${/objectives PDF/.test(t.text)?'<p><a href="https://www.comptia.org/certifications/network">CompTIA Network+ page</a>: download the N10-009 exam objectives.</p>':''}${/Pearson VUE/.test(t.text)?'<p>Book through CompTIA\'s page or directly with Pearson VUE. Choose a test centre or online proctoring.</p>':''}<p class="hint">Mark it as completed below when it's done.</p>`;
+}
+
 export function goTo(go){
   if(!go)return;
   if(go.startsWith('quiz:')){state.startQuiz=go.slice(5);if(location.hash==='#quiz')nav.route();else location.hash='quiz';return}
@@ -92,10 +180,10 @@ export function goTo(go){
 }
 const label=n=>n==='F'?'Final review':`Video Ch ${n}`;
 export function nextBox(p,{showLink}={}){
-  if(!p.next)return `<div class="nextbox"><p class="eyebrow">Study path</p><p><b>Every task is done.</b> Book the exam.</p></div>`;
+  if(!p.next)return `<div class="nextbox"><p class="eyebrow">Study path</p><p><b>Every item is complete.</b> Book the exam.</p></div>`;
   const {chapter:c,task:t}=p.next;
-  return `<div class="nextbox"><p class="eyebrow">Next up · ${label(c.n)}: ${esc(c.title)}</p><p class="nexttask">${esc(t.text)}</p>
-  <div class="row">${t.go?`<button class="btn" data-go="${esc(t.go)}">Start</button>`:''}${t.go?'':`<button class="btn" data-tick="${t.id}">Mark done</button>`}${showLink?'<a href="#study">Open the study path</a>':''}<span class="sp"></span><span class="hint mono">${p.done} / ${p.total} tasks</span></div>
+  return `<div class="nextbox"><p class="eyebrow">Next up · ${label(c.n)}: ${esc(c.title)}</p><p class="nexttask">${esc(itemTitle(t))}</p>
+  <div class="row"><a class="btn" href="#do-${t.id}">${p.done?'Resume':'Start'}</a>${showLink?'<a href="#study">Open the study path</a>':''}<span class="sp"></span><span class="hint mono">${p.done} / ${p.total} items</span></div>
   <div class="pbar" aria-hidden="true"><span style="width:${Math.round(p.done/p.total*100)}%"></span></div></div>`;
 }
 
@@ -113,7 +201,7 @@ VIEWS.study=function(el){
         return `<details class="chap ${isCur?'cur':''}" data-ch="${c.n}" ${open.has(String(c.n))?'open':''}><summary><span class="ct">${label(c.n)}: ${esc(c.title)}</span>${isCur?'<span class="tag">Next</span>':''}<span class="cnt mono ${complete?'ok':''}">${complete?'done':c.doneN+' / '+c.tasks.length}</span></summary>
         <p class="hint mono small">${c.meta}</p>
         <ul class="tasks">${c.tasks.map(t=>{const isNext=p.next&&p.next.task.id===t.id;
-          return `<li class="task ${t.done?'done':''} ${isNext?'next':''}"><input type="checkbox" id="${t.id}" data-tick="${t.id}" ${t.done?'checked':''} ${t.auto?'disabled title="Completed automatically"':''}><label for="${t.id}">${esc(t.text)}${t.hasAuto?`<span class="autonote">${t.auto?'completed automatically':'ticks itself when you hit the target'}</span>`:''}</label>${t.go?`<button class="link go" data-go="${esc(t.go)}">${isNext?'Start':'Open'}</button>`:''}</li>`}).join('')}</ul>
+          return `<li class="task ${t.done?'done':''} ${isNext?'next':''}"><input type="checkbox" id="${t.id}" data-tick="${t.id}" ${t.done?'checked':''} ${t.auto?'disabled title="Completed automatically"':''}><label for="${t.id}">${esc(t.text)}${t.hasAuto?`<span class="autonote">${t.auto?'completed automatically':'ticks itself when you hit the target'}</span>`:''}</label><a class="go" href="#do-${t.id}">${isNext?'Start':'Open'}</a></li>`}).join('')}</ul>
         <details class="mem"><summary>Memorize (${c.mem.length})</summary><ul>${c.mem.map(m=>`<li>${esc(m)}</li>`).join('')}</ul></details>
         </details>`}).join('')}`).join('')}`;
     el.querySelectorAll('details.chap').forEach(d=>d.addEventListener('toggle',()=>{d.open?open.add(d.dataset.ch):open.delete(d.dataset.ch)}));

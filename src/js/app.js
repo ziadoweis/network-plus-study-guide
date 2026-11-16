@@ -1,8 +1,9 @@
-import {store,DOMAINS,LABS,PT_META,CORRECTIONS,SITE_NAME,head,clearTimers,nav,state} from './core.js';
+import {store,DOMAINS,LABS,PT_META,CORRECTIONS,SITE_NAME,head,clearTimers,nav,state,registry} from './core.js';
 
 const PT_SHORT=['First LAN and SSH','VLANs and trunks','Inter-VLAN routing and DHCP','Static routing','OSPF','NAT and PAT','ACLs and screened subnet','DNS, NTP, syslog, SNMP','Switch security','Wireless LAN','IPv6 dual stack','Break and fix','Capstone'];
 const main=document.getElementById('main'),rail=document.getElementById('rail');
 const VIEWS={};
+registry.VIEWS=VIEWS;
 
 /* Sections load on first visit, then stay cached by the browser and the service worker. */
 const load={quiz:()=>import('./quiz.js'),labs:()=>import('./labs.js'),pt:()=>import('./pt.js'),study:()=>import('./study.js'),notes:()=>import('./notes.js')};
@@ -10,6 +11,7 @@ function resolve(h){
   if(VIEWS[h])return Promise.resolve(VIEWS[h]);
   if(h==='quiz'||h==='exam')return load.quiz().then(m=>m.VIEWS[h]);
   if(h==='study')return load.study().then(m=>m.VIEWS.study);
+  if(/^do-[A-Za-z0-9-]+$/.test(h))return load.study().then(m=>m.itemView(h.slice(3)));
   if(h==='notes')return load.notes().then(m=>m.VIEWS.notes);
   if(/^notes-\d+$/.test(h))return load.notes().then(m=>m.notesView(+h.slice(6)));
   if(h.startsWith('lab-'))return load.labs().then(m=>m.VIEWS[h]);
@@ -17,7 +19,7 @@ function resolve(h){
   if(PT_META.some(p=>p.slug===h))return load.pt().then(m=>m.ptView(h));
   return null;
 }
-const KNOWN=h=>VIEWS[h]||['quiz','exam','pt','study','notes'].includes(h)||/^notes-([1-9]|1\d|2[01])$/.test(h)||h.startsWith('lab-')&&LABS.some(l=>l.hash===h)||PT_META.some(p=>p.slug===h);
+const KNOWN=h=>VIEWS[h]||/^do-[A-Za-z0-9-]+$/.test(h)||['quiz','exam','pt','study','notes'].includes(h)||/^notes-([1-9]|1\d|2[01])$/.test(h)||h.startsWith('lab-')&&LABS.some(l=>l.hash===h)||PT_META.some(p=>p.slug===h);
 
 const NAV=[
  ['Start',[['overview','Overview'],['study','Study path'],['notes','Chapter notes']]],
@@ -25,10 +27,20 @@ const NAV=[
  ['Labs',LABS.map(l=>[l.hash,l.name])],
  ['Packet Tracer',[['pt','All Packet Tracer labs'],...PT_META.map((p,i)=>[p.slug,`${i+1}. ${PT_SHORT[i]}`])]],
  ['Reference',[['corrections','Corrections to your materials'],['roadmap','Roadmap']]]];
-rail.innerHTML=`<div class="railhead"><div><div class="title">${SITE_NAME}</div><div class="sub">CompTIA N10-009</div></div><button type="button" class="menubtn" id="menubtn" aria-expanded="false" aria-controls="navlinks">Menu</button></div><div class="navlinks" id="navlinks">`+NAV.map(([h,items])=>`<h4>${h}</h4>`+items.map(([k,l])=>`<a href="#${k}" data-r="${k}">${l}</a>`).join('')).join('')+'</div>';
-const menubtn=document.getElementById('menubtn');
+rail.innerHTML=`<div class="railhead"><div><div class="title">${SITE_NAME}</div><div class="sub">CompTIA N10-009</div></div><button type="button" class="menubtn" id="menubtn" aria-expanded="false" aria-controls="navlinks">Menu</button></div>
+<div class="navlinks" id="navlinks"><div class="railtabs" role="tablist"><button type="button" role="tab" data-rt="course">Course</button><button type="button" role="tab" data-rt="pages">All pages</button></div>
+<div id="rail-course" class="railpanel"><p class="hint">Loading course…</p></div>
+<div id="rail-pages" class="railpanel">`+NAV.map(([h,items])=>`<h4>${h}</h4>`+items.map(([k,l])=>`<a href="#${k}" data-r="${k}">${l}</a>`).join('')).join('')+'</div></div>';
+const menubtn=document.getElementById('menubtn'),coursePanel=document.getElementById('rail-course'),pagesPanel=document.getElementById('rail-pages');
 const setMenu=open=>{rail.classList.toggle('open',open);menubtn.setAttribute('aria-expanded',String(open));menubtn.textContent=open?'Close':'Menu'};
 menubtn.addEventListener('click',()=>setMenu(!rail.classList.contains('open')));
+let railTab=store.get('railTab','course');
+function setTab(t){railTab=t;store.set('railTab',t);rail.querySelectorAll('[data-rt]').forEach(b=>{const on=b.dataset.rt===t;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});coursePanel.hidden=t!=='course';pagesPanel.hidden=t!=='pages';if(t==='course')refreshOutline()}
+rail.addEventListener('click',e=>{const b=e.target.closest('[data-rt]');if(b)setTab(b.dataset.rt)});
+let studyMod=null;
+function refreshOutline(){if(railTab!=='course')return;const cur=location.hash.startsWith('#do-')?location.hash.slice(4):null;
+  (studyMod?Promise.resolve(studyMod):load.study().then(m=>studyMod=m)).then(m=>m.renderOutline(coursePanel,cur)).catch(()=>{coursePanel.innerHTML='<p class="hint">The course outline couldn\'t load.</p>'})}
+let pend=0;window.addEventListener('np:progress',()=>{if(!pend){pend=1;requestAnimationFrame(()=>{pend=0;refreshOutline()})}});
 rail.addEventListener('click',e=>{if(e.target.closest('a'))setMenu(false)});
 
 let seq=0;
@@ -38,6 +50,7 @@ function route(){
   let h=location.hash.slice(1);if(!KNOWN(h))h='overview';
   const navKey=h.startsWith('notes-')?'notes':h;
   rail.querySelectorAll('a').forEach(a=>{const on=a.dataset.r===navKey;a.classList.toggle('on',on);on?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current')});
+  refreshOutline();
   const my=++seq;const p=resolve(h);
   const show=v=>{if(my!==seq)return;main.innerHTML='';v(main);const h1=main.querySelector('h1');document.title=h1&&h!=='overview'?`${h1.textContent} · ${SITE_NAME}`:SITE_NAME;window.scrollTo(0,0)};
   if(VIEWS[h])return show(VIEWS[h]);
@@ -46,6 +59,7 @@ function route(){
 }
 nav.route=route;
 window.addEventListener('hashchange',route);
+setTab(railTab);
 
 /* Copy buttons on Packet Tracer command blocks */
 function selectPre(pre){const r=document.createRange();r.selectNodeContents(pre);const s=window.getSelection();s.removeAllRanges();s.addRange(r)}

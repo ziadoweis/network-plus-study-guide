@@ -11,3 +11,4 @@ export const timers=[];
 export function clearTimers(){timers.forEach(clearInterval);timers.length=0}
 export const nav={route:()=>{}};
 export const state={startQuiz:null};
+export const registry={VIEWS:{}};

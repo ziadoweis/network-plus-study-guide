@@ -130,3 +130,5 @@ function runQuiz(el,qs,o){
   render();
 }
 
+
+export {quizSet,runQuiz};
