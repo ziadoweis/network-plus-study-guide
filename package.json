@@ -1,0 +1,14 @@
+{
+  "name": "network-plus-study-guide",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CompTIA Network+ (N10-009) study guide: quizzes, labs and Cisco Packet Tracer labs",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "preview": "npx serve dist"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}
