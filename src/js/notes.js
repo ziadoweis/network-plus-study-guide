@@ -8,7 +8,7 @@ const PARTS={1:()=>import('./lessons/part1.js'),2:()=>import('./lessons/part2.js
 
 VIEWS.notes=function(el){
   const done=LESSON_META.filter(l=>isRead(l.n)).length;
-  el.innerHTML=`${head('Lessons','One lesson per video chapter',`Each lesson teaches its chapter in full: explanations, worked examples, key points and exam traps. Read it after the video and you'll have everything the quizzes, labs and Packet Tracer tasks need. ${done} of 21 read.`)}
+  el.innerHTML=`${head('Lessons','21 lessons, read in order',`Each lesson teaches its topic in full: explanations, diagrams, worked examples, key points and exam traps. Each one gives you everything its quiz, labs and Packet Tracer tasks need. ${done} of 21 read.`)}
   <ul class="list">${LESSON_META.map(l=>`<li><a href="#notes-${l.n}">Lesson ${l.n}: ${l.title}</a><span class="meta">Obj ${l.obj} · ${l.min} min · ${isRead(l.n)?'read':'not read'}</span></li>`).join('')}</ul>`;
 };
 export async function notesView(n){

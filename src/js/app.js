@@ -92,7 +92,7 @@ VIEWS.overview=function(el){
   const last=exams[exams.length-1];
   const labState=id=>{const L=labs[id]||{};if(L.done)return 'done';if(L.n)return L.n+' solved';if(L.best!=null)return 'best '+L.best+'%';return '—'};
   const ptDone=PT_META.filter(p=>pt[p.slug]).length;
-  el.innerHTML=`${head('CompTIA Network+ · N10-009','Your progress','After each video chapter, follow the Study path: it lists what to read, which quiz and lab to do, and which Packet Tracer lab to build, and it highlights your next task. Progress is saved in this browser only.')}
+  el.innerHTML=`${head('CompTIA Network+ · N10-009','Your progress','Follow the Study path lesson by lesson: read each lesson, take its quiz, then do the labs and Packet Tracer builds that go with it. It highlights your next task. Progress is saved in this browser only.')}
   <div id="nextup" style="margin-bottom:22px"><div class="nextbox"><p class="hint">Loading your next task…</p></div></div>
   <p class="small muted" style="margin-bottom:22px">Exam: up to 90 questions (multiple choice and performance-based), 90 minutes, pass mark 720 on a 100–900 scale. ${last?`Last mock exam: <b class="mono" style="color:var(--ink)">${last.pct}%</b>.`:'No mock exam taken yet.'}</p>
   <h2>Domains</h2>
@@ -116,7 +116,7 @@ VIEWS.overview=function(el){
 
 /* ---------- corrections ---------- */
 VIEWS.corrections=function(el){
-  el.innerHTML=`${head('Reference','Corrections to your study materials','Places where your Sybex book, video handouts or quiz workbook disagree with the N10-009 objectives or the underlying standards. Learn the right-hand column for the exam.')}
+  el.innerHTML=`${head('Reference','Corrections to your study materials','Places where your Sybex book, course handouts or quiz workbook disagree with the N10-009 objectives or the underlying standards. Learn the right-hand column for the exam.')}
   <div class="tw"><table><thead><tr><th>Where</th><th>What it says</th><th>What\'s correct</th></tr></thead><tbody>${CORRECTIONS.map(c=>`<tr><td class="small mono">${c[0]}</td><td class="small">${c[1]}</td><td class="small">${c[2]}</td></tr>`).join('')}</tbody></table></div>
   <h2 style="margin-top:26px">Terminology CompTIA uses now</h2>
   <div class="tw"><table><thead><tr><th>Older term</th><th>N10-009 term</th></tr></thead><tbody>${[['Man-in-the-middle','On-path attack'],['DMZ','Screened subnet'],['Mantrap','Access control vestibule'],['Whitelist / blacklist','Allow list / block list']].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</tbody></table></div>`;

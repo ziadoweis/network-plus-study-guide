@@ -1,8 +1,11 @@
-import {store,esc,shuffle,rnd,pick,ip2int,int2ip,maskInt,isIp,sameNet,DOMAINS,OBJ,CHAPTERS,objTag,LABS,PT_META,OBJ_VIDEO,OBJ_PRACTICE,head,markLab,timers,clearTimers,nav,state} from './core.js';
+import {store,esc,shuffle,rnd,pick,ip2int,int2ip,maskInt,isIp,sameNet,DOMAINS,OBJ,CHAPTERS,objTag,LABS,PT_META,OBJ_PRACTICE,head,markLab,timers,clearTimers,nav,state} from './core.js';
 const main=document.getElementById('main');
 const VIEWS={};
 export {VIEWS};
 import {QB} from './qb.js';
+import {QL} from './qlesson.js';
+const LOF=new Map(QB.map((q,i)=>[q,QL[i]]));
+const lessonQs=n=>QB.filter((q,i)=>QL[i]===n);
 import {LESSON_META} from './lesson-meta.js';
 const lt=v=>`Lesson ${v}: ${(LESSON_META.find(l=>l.n===v)||{}).title}`;
 /* ---------- quizzes ---------- */
@@ -12,6 +15,7 @@ const isRight=(q,p)=>isMulti(q)?Array.isArray(p)&&p.length===q[3].length&&p.ever
 const ansText=(q,p)=>p==null?'(no answer)':(Array.isArray(p)?p:[p]).map(k=>q[2][k]).join(' + ');
 function quizSet(key){
   if(key==='all')return {qs:QB,title:'All domains',key};
+  if(key[0]==='l'){const n=+key.slice(1);return {qs:lessonQs(n),title:lt(n),key}}
   if(key[0]==='d'){const d=+key.slice(1);return {qs:QB.filter(q=>qDom(q)===d),title:`${d}.0 ${DOMAINS[d-1].name}`,domain:d,key}}
   if(key[0]==='c'){const c=+key.slice(1);return {qs:QB.filter(q=>OBJ[q[0]][1].includes(c)),title:`Book Ch. ${c}: ${CHAPTERS[c-1]}`,key}}
   if(key[0]==='o'){const o=key.slice(1);return {qs:QB.filter(q=>q[0]===o),title:`Objective ${o}: ${OBJ[o][0]}`,key}}
@@ -20,8 +24,11 @@ VIEWS.quiz=function(el){
   if(state.startQuiz){const s=quizSet(state.startQuiz);state.startQuiz=null;return runQuiz(el,shuffle(s.qs),s)}
   const best=store.get('quizBest',{});
   const chCount=c=>QB.filter(q=>OBJ[q[0]][1].includes(c)).length;
-  el.innerHTML=`${head('Practice','Quizzes',`${QB.length} questions written to the N10-009 objectives. Each shows its objective and the book chapter to reread. Some are "choose two". Keys 1–4 answer, Enter continues.`)}
-  <h2>By domain</h2>
+  el.innerHTML=`${head('Practice','Quizzes',`${QB.length} questions written to the N10-009 objectives. Each lesson has its own quiz covering only what that lesson teaches, and every answer links back to the lesson to reread. Some are "choose two". Keys 1–4 answer, Enter continues.`)}
+  <h2>By lesson</h2>
+  <p class="hint">Take each one right after reading the lesson. 85% or more ticks it off in the study path.</p>
+  <ul class="list">${LESSON_META.map(l=>{const b=store.get('quizKeyBest',{})['l'+l.n];return `<li><button class="link" data-k="l${l.n}">${lt(l.n)}</button><span class="meta">${lessonQs(l.n).length} questions · ${b==null?'not attempted':'best '+b+'%'}</span></li>`}).join('')}</ul>
+  <h2 style="margin-top:26px">By domain</h2>
   <ul class="list">${DOMAINS.map(d=>{const n=QB.filter(q=>qDom(q)===d.id).length,b=best[d.id];return `<li><button class="link" data-k="d${d.id}">${d.id}.0 ${d.name}</button><span class="meta">${n} questions · ${b==null?'not attempted':'best '+b+'%'}</span></li>`}).join('')}
   <li><button class="link" data-k="all">All domains, shuffled</button><span class="meta">${QB.length} questions</span></li></ul>
   <h2 style="margin-top:26px">By book chapter</h2>
@@ -46,10 +53,9 @@ VIEWS.exam=function(el){
 const asArr=p=>p==null?[]:Array.isArray(p)?p:[p];
 const pageName=h=>{const l=LABS.find(x=>x.hash===h);if(l)return l.name;const i=PT_META.findIndex(p=>p.slug===h);return i>=0?`Packet Tracer lab ${i+1}`:h};
 function reviseHtml(q){
-  const o=q[0],vids=OBJ_VIDEO[o]||[],prac=OBJ_PRACTICE[o]||[];
-  const parts=[...vids.map(v=>`<a href="#notes-${v}">${lt(v)}</a>`),
-    `<a href="#quiz" data-requiz="o${o}">Quiz on Objective ${o}</a>`,...prac.map(h=>`<a href="#${h}">${pageName(h)}</a>`),q[6]?'<a href="#corrections">Corrections page</a>':'',`<span class="muted">Book Ch. ${OBJ[o][1].join(', ')}</span>`].filter(Boolean);
-  return `<div class="revise"><b>Revise Objective ${o} (${esc(OBJ[o][0])}):</b> ${parts.join(' · ')}</div>`;
+  const o=q[0],n=LOF.get(q),prac=OBJ_PRACTICE[o]||[];
+  const parts=[`<a href="#notes-${n}">Reread ${lt(n)}</a>`,`<a href="#quiz" data-requiz="l${n}">Lesson ${n} quiz</a>`,...prac.map(h=>`<a href="#${h}">${pageName(h)}</a>`),q[6]?'<a href="#corrections">Corrections page</a>':'',`<span class="muted">Objective ${o}: ${esc(OBJ[o][0])} · Book Ch. ${OBJ[o][1].join(', ')}</span>`].filter(Boolean);
+  return `<div class="revise"><b>Where to revise:</b> ${parts.join(' · ')}</div>`;
 }
 function reviewHtml(q,p,{compact}={}){
   const right=isRight(q,p),mine=asArr(p),ans=asArr(q[3]),why=q[5]||[];
@@ -85,7 +91,7 @@ function runQuiz(el,qs,o){
     else if(multi)nav=`<span class="hint">Choose ${needN}.</span><span class="sp"></span><button class="btn" data-act="lock" ${(draft[i]||[]).length===needN?'':'disabled'}>Check answer</button>`;
     else nav='';
     el.innerHTML=`<div class="qbar"><button class="link" data-act="quit">← Back</button><span>${esc(o.title)}</span><span class="mono hint">${i+1} / ${items.length}</span>${o.exam?'<span class="mono timer" id="timer" style="margin-left:auto"></span>':''}</div>
-    <p class="qmeta">${objTag(q[0])}</p><h2 class="qtext">${esc(q[1])}</h2><div class="opts">${opts}</div>${fb}<div class="qnav">${nav}</div>
+    <p class="qmeta">Lesson ${LOF.get(q)} · ${objTag(q[0])}</p><h2 class="qtext">${esc(q[1])}</h2><div class="opts">${opts}</div>${fb}<div class="qnav">${nav}</div>
     ${o.exam?`<div class="jump">${items.map((_,j)=>`<button data-j="${j}" class="${picked[j]!==null?'a':''} ${j===i?'c':''}" aria-label="Question ${j+1}">${j+1}</button>`).join('')}</div>`:''}`;
     tick();
   }
@@ -102,14 +108,14 @@ function runQuiz(el,qs,o){
     if(o.key){const kb=store.get('quizKeyBest',{});kb[o.key]=Math.max(kb[o.key]??0,pct);store.set('quizKeyBest',kb)}
     if(o.exam){const ex=store.get('exams',[]);ex.push({date:new Date().toISOString().slice(0,10),pct,by});store.set('exams',ex)}
     const missed=items.map((it,j)=>[it,j]).filter(([it,j])=>!isRight(it.q,picked[j]));
-    const objs=[...new Set(missed.map(([it])=>it.q[0]))].sort();
+    const lsns=[...new Set(missed.map(([it])=>LOF.get(it.q)))].sort((a,b)=>a-b);
     el.innerHTML=`<div class="qbar"><button class="link" data-act="quit">← Back</button><span>${esc(o.title)}: results</span></div>
     <p style="font-size:1.6rem" class="mono">${pct}% <span class="hint" style="font-size:.9rem">${right} of ${items.length} correct</span></p>
     ${o.exam?`<p class="hint">A rough guide only: 85%+ here is a good sign of readiness. CompTIA's 100–900 scaling isn't published.</p>`:''}
     <div class="row" style="margin:14px 0"><button class="btn" data-act="retry">Try again</button></div>
     ${Object.keys(by).length>1?`<div class="tw"><table><thead><tr><th>Domain</th><th>Score</th></tr></thead><tbody>${Object.entries(by).map(([d,v])=>`<tr><td>${d}.0 ${DOMAINS[d-1].name}</td><td class="mono ${v>=85?'ok':v<60?'no':''}">${v}%</td></tr>`).join('')}</tbody></table></div>`:''}
-    ${objs.length?`<h2 style="margin-top:22px">Objectives to revise</h2><ul class="steps small">${objs.map(ob=>`<li>${objTag(ob)}: ${OBJ[ob][0]}${OBJ_VIDEO[ob]?' · '+OBJ_VIDEO[ob].map(v=>`<a href="#notes-${v}">${lt(v)}</a>`).join(', '):''} · <a href="#quiz" data-requiz="o${ob}">retake this objective</a></li>`).join('')}</ul>`:''}
-    ${missed.length?`<h2 style="margin-top:22px">Review what you missed</h2><p class="hint">For each one: why your answer was wrong, the correct answer and why, and where to revise.</p>${missed.map(([it,j])=>`<div class="miss"><p class="qmeta">${objTag(it.q[0])}</p><b>${esc(it.q[1])}</b><div class="fb no">${reviewHtml(it.q,picked[j],{compact:true})}</div></div>`).join('')}`:'<p>Every answer correct.</p>'}`;
+    ${lsns.length?`<h2 style="margin-top:22px">Lessons to revise</h2><ul class="steps small">${lsns.map(n=>`<li><a href="#notes-${n}">${lt(n)}</a> · ${missed.filter(([it])=>LOF.get(it.q)===n).length} missed · <a href="#quiz" data-requiz="l${n}">retake the Lesson ${n} quiz</a></li>`).join('')}</ul>`:''}
+    ${missed.length?`<h2 style="margin-top:22px">Review what you missed</h2><p class="hint">For each one: why your answer was wrong, the correct answer and why, and where to revise.</p>${missed.map(([it,j])=>`<div class="miss"><p class="qmeta">Lesson ${LOF.get(it.q)} · ${objTag(it.q[0])}</p><b>${esc(it.q[1])}</b><div class="fb no">${reviewHtml(it.q,picked[j],{compact:true})}</div></div>`).join('')}`:'<p>Every answer correct.</p>'}`;
   }
   main.onclick=e=>{
     const rq=e.target.closest('[data-requiz]');if(rq){e.preventDefault();clearTimers();const s=quizSet(rq.dataset.requiz);return runQuiz(el,shuffle(s.qs),s)}

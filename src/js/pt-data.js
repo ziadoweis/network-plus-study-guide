@@ -28,7 +28,7 @@ ${TB(['Connection','Packet Tracer cable','Why'],[
 <li>The first ping between two devices often loses one reply while ARP resolves the MAC address. That's normal.</li>
 </ul>`;
 
-export const PTLABS=[
+const RAW=[
 {slug:'pt-first-lan',title:'Your first LAN and a hardened switch',obj:['1.1','1.5','3.5','4.3'],time:'60–75 min',
  goal:'Cable a small LAN, watch ARP and ICMP move through a switch in Simulation mode, then secure the switch with passwords and SSH.',
  body:()=>`
@@ -43,7 +43,7 @@ ${TB(['Device','Interface','IPv4 address','Mask','Gateway'],[['SW1','VLAN 1','19
 <li>Add three PCs (<b>End Devices → PC</b>) and name them PC1, PC2 and PC3.</li>
 <li>Choose <b>Connections → Copper Straight-Through</b>. Click PC1, choose <b>FastEthernet0</b>, then click SW1 and choose <b>FastEthernet0/1</b>. Connect PC2 to Fa0/2 and PC3 to Fa0/3 the same way.</li>
 <li>Choose the <b>Console</b> cable. Connect PC1 <b>RS 232</b> to SW1 <b>Console</b>.</li>
-<li>Watch the link dots turn from orange to green. Orange means the switch port is in the STP listening/learning states (Book Ch. 11).</li>
+<li>Watch the link dots turn from orange to green. Orange means the switch port is in the STP listening/learning states (Lesson 11).</li>
 </ol>
 <h3>Part 2: Address the PCs and test</h3>
 <ol class="steps">
@@ -850,3 +850,7 @@ ${['A Staff PC on each floor gets a DHCP address in 10.20.0.0/25 with gateway 10
  qs:[['Which earlier labs does each requirement come from?','Addressing → subnetting lab. Switching → VLANs lab. Routing and DHCP → inter-VLAN lab. Internet → NAT lab. Guest restrictions → ACL lab. SSH → first LAN lab. Port security and BPDU Guard → switch security lab.'],
   ['Where should the Guest ACL be applied?','Inbound on R1\'s Guest subinterface (G0/0.20), as close to the source as possible.']]}
 ];
+/* Labs in the order the lessons reach them; "after" is the lesson whose content the lab needs. */
+const ORDER=[['pt-first-lan',6],['pt-static-routing',7],['pt-ospf',7],['pt-nat',7],['pt-services',9],['pt-vlans',11],['pt-intervlan-dhcp',11],['pt-ipv6',12],['pt-wireless',14],['pt-acl',19],['pt-switch-security',19],['pt-break-fix',21],['pt-capstone','F']];
+export const PTLABS=ORDER.map(([s,after])=>({...RAW.find(l=>l.slug===s),after}));
+if(PTLABS.length!==RAW.length||PTLABS.some(l=>!l.title))throw new Error('PT lab order is out of sync');
