@@ -7,7 +7,7 @@ VIEWS['lab-subnet']=function(el){
   let tab='calc',streak=0,ans=null;
   const TABS=[['calc','Find the subnet'],['size','Size a subnet'],['bin','Binary'],['v6','IPv6 shorthand'],['eui','EUI-64']];
   function shell(){
-    el.innerHTML=`${head('Lab · Obj 1.7, 1.8 · Book Ch. 7, 8','Subnetting and addressing','Work it on paper first. The book\'s method: block size = 256 − the mask value in the interesting octet; subnets start at multiples of the block; the broadcast is one less than the next subnet.')}
+    el.innerHTML=`${head('Lab · Lessons 6 and 12 · Obj 1.7, 1.8','Subnetting and addressing','Work it on paper first. The method from Lesson 6: block size = 256 − the mask value in the interesting octet; subnets start at multiples of the block; the broadcast is one less than the next subnet.')}
     <div class="tabs">${TABS.map(([k,l])=>`<button class="tab ${tab===k?'on':''}" data-tab="${k}">${l}</button>`).join('')}</div>
     <p class="hint" style="margin-bottom:12px">Streak <span class="mono" id="streak">${streak}</span> · solved <span class="mono">${(store.get('labs',{}).subnet||{}).n||0}</span></p>
     <div id="pane"></div>
@@ -92,7 +92,7 @@ VIEWS['lab-ports']=function(el){
   const N=15;let qs=[],i=0,score=0,miss=[],t0=0,answered=false,extra=false;
   const pool=()=>PORTS.filter(p=>extra||p[4]);
   function intro(){qs=[];const best=(store.get('labs',{}).ports||{}).best;
-    el.innerHTML=`${head('Lab · Obj 1.4 · Book Ch. 6, 8','Ports and protocols','15 quick questions: type the port, name the protocol, or pick the transport. Enter both ports where there are two (for example 20, 21).')}
+    el.innerHTML=`${head('Lab · Lesson 8 · Obj 1.4','Ports and protocols','15 quick questions: type the port, name the protocol, or pick the transport. Enter both ports where there are two (for example 20, 21).')}
     <div class="row"><button class="btn" data-act="start">Start sprint</button><label class="small row" style="gap:6px"><input type="checkbox" id="extra" ${extra?'checked':''}> Include the extra ports from the book and handouts</label><span class="sp"></span>${best!=null?`<span class="hint">Best ${best}%</span>`:''}</div>
     <h2 style="margin-top:26px">Reference</h2><div class="tw"><table><thead><tr><th>Protocol</th><th>Port</th><th>Transport</th><th>Note</th></tr></thead><tbody>${PORTS.map(p=>`<tr class="${p[4]?'':'muted'}"><td>${p[0]}</td><td class="mono">${p[1]}</td><td class="mono">${p[2]}</td><td class="small">${p[3]}</td></tr>`).join('')}</tbody></table></div><p class="hint">Grey rows aren't on the N10-009 port list but appear in your book or handouts. Port ranges: well-known 0–1023, registered 1024–49151, dynamic 49152–65535.</p>`}
   function start(){const P=shuffle(pool());qs=Array.from({length:N},(_,k)=>{const p=P[k%P.length];const type=pick(['num','num','name','tp']);
@@ -135,7 +135,7 @@ VIEWS['lab-osi']=function(el){
   let items=[],i=0,score=0,locked=false;const N=14;
   function start(){items=shuffle(OSI_ITEMS).slice(0,N);i=0;score=0;render()}
   function render(){locked=false;const it=items[i];
-    el.innerHTML=`${head('Lab · Obj 1.1 · Book Ch. 2','OSI layer sorter','Pick the layer for each item. Bottom up: <i>Please Do Not Throw Sausage Pizza Away</i>. Keys 1–7 choose a layer.')}
+    el.innerHTML=`${head('Lab · Lesson 1 · Obj 1.1','OSI layer sorter','Pick the layer for each item. Bottom up: <i>Please Do Not Throw Sausage Pizza Away</i>. Keys 1–7 choose a layer.')}
     <div class="labgrid"><div><p class="hint mono">${i+1} / ${N} · score ${score}</p><p class="osi-item">${esc(it[0])}</p><div id="ofb"></div></div>
     <div class="layers">${LAYERS.map(([n,name,pdu])=>`<button class="layer" data-l="${n}"><b>L${n}</b><span>${name}</span><span class="pdu">${pdu}</span></button>`).join('')}</div></div>`}
   function choose(n){if(locked)return;locked=true;const it=items[i],ok=n===it[1];if(ok)score++;
@@ -149,41 +149,53 @@ VIEWS['lab-osi']=function(el){
 };
 
 /* ---------- cables, connectors and tools ---------- */
-const CABLE_ANS=['Straight-through','Crossover','Rollover (console)','Cat 5e','Cat 6a','Cat 8','DAC (twinax)','Single-mode fiber + LR optics','Multimode fiber + SR optics','Plenum-rated cable','RG-6 with F-type','LC connector','APC connector','Toner probe','Cable tester','Certifier','TDR','OTDR','Visual fault locator','Optical light meter','Loopback plug','Punchdown tool','Multimeter','Wi-Fi analyzer'];
+/* Each job is tagged with the lesson that teaches it: [job, answer, why, lesson]. */
 const CABLE_Q=[
- ['Connect a PC to a switch port','Straight-through','Unlike devices.'],
- ['Connect two older switches that lack Auto-MDI-X','Crossover','Like devices swap pairs 1↔3 and 2↔6.'],
- ['Reach a new switch\'s CLI from a laptop before it has any IP','Rollover (console)','Out-of-band console access.'],
- ['Cheapest category for new 1 Gbps desk runs','Cat 5e','The minimum for new installs; handles 1000BASE-T at 100 m.'],
- ['10GBASE-T to a desk 90 m away','Cat 6a','Cat 6 only manages about 55 m at 10 Gbps.'],
- ['40GBASE-T between racks 20 m apart','Cat 8','Cat 8 supports 25/40GBASE-T up to 30 m.'],
- ['10 Gbps from a server to the top-of-rack switch, 2 m, lowest cost','DAC (twinax)','Direct-attach copper in SFP+ ports.'],
- ['Link between buildings 8 km apart','Single-mode fiber + LR optics','10GBASE-LR reaches 10 km over SMF at 1310 nm.'],
- ['200 m 10 Gbps link inside one data center','Multimode fiber + SR optics','10GBASE-SR covers about 300–400 m on OM3/OM4.'],
- ['Run through the air-return space above a drop ceiling','Plenum-rated cable','Fire-resistant, low smoke.'],
- ['Connect a cable modem to the wall outlet','RG-6 with F-type','75 Ω coax for cable broadband.'],
- ['Connector usually found on SFP transceivers','LC connector','Small form factor, latching.'],
- ['Green connector with an 8° polished end face','APC connector','Never mate APC with UPC (blue).'],
- ['Find which patch panel port a wall jack lands on','Toner probe','"Fox and hound".'],
- ['Check a new patch cable\'s wire map for opens and crossed pairs','Cable tester','Continuity and pinout.'],
- ['Prove a new run meets the Cat 6 spec for a client handoff','Certifier','Tests performance against the category standard.'],
- ['Find how far down a copper run a break is','TDR','Time-domain reflectometer.'],
- ['Find how far down a fiber run a break is','OTDR','Optical TDR.'],
- ['See a fiber break or tight bend in a patch room by eye','Visual fault locator','A red laser glows at the fault.'],
- ['Measure received optical signal level in dBm','Optical light meter','Compare against the link\'s loss budget.'],
- ['Test whether a switch port or NIC transmits and receives','Loopback plug','It sends TX back to RX.'],
- ['Terminate cable on a 110 block','Punchdown tool','Also used for keystone jacks.'],
- ['Check voltage on a suspect power circuit','Multimeter','Voltage, resistance, continuity.'],
- ['Find which channels neighboring APs use','Wi-Fi analyzer','Shows SSIDs, channels and signal strength.']];
-VIEWS['lab-cables']=function(el){
-  let set=[];
-  function render(){set=shuffle(CABLE_Q).slice(0,10);
-    el.innerHTML=`${head('Lab · Obj 1.5, 5.2 · Book Ch. 3, 4, 18','Cables, connectors and tools','A performance-based-style exercise: pick the right cable, optic or tool for each job. Ten random jobs per round.')}
-    <div class="stack">${set.map((q,k)=>`<div class="field" id="cf${k}"><label for="cs${k}">${k+1}. ${esc(q[0])}</label><select id="cs${k}"><option value="">Choose…</option>${CABLE_ANS.map(a=>`<option>${esc(a)}</option>`).join('')}</select><span class="corr small"></span></div>`).join('')}</div>
-    <div class="row" style="margin-top:18px"><button class="btn" data-act="check">Check</button><button class="btn ghost" data-act="new">New round</button><span class="hint" id="cres"></span></div>`}
-  main.onclick=e=>{const a=e.target.closest('[data-act]');if(!a)return;if(a.dataset.act==='new')return render();
-    let r=0;set.forEach((q,k)=>{const v=document.getElementById('cs'+k).value,f=document.getElementById('cf'+k),ok=v===q[1];r+=ok;f.classList.toggle('ok',ok);f.classList.toggle('no',!ok);f.querySelector('.corr').textContent=ok?q[2]:`→ ${q[1]}. ${q[2]}`});
-    const pct=r*10;document.getElementById('cres').textContent=`${r} / 10`;markLab('cables',L=>({best:Math.max(L.best??0,pct)}))};
+ ['Connect a PC to a switch port','Straight-through','Unlike devices.',2],
+ ['Connect two older switches that lack Auto-MDI-X','Crossover','Like devices swap pairs 1↔3 and 2↔6.',2],
+ ['Reach a new switch\'s CLI from a laptop before it has any IP','Rollover (console)','Out-of-band console access.',2],
+ ['Cheapest category for new 1 Gbps desk runs','Cat 5e','The minimum for new installs; handles 1000BASE-T at 100 m.',2],
+ ['10GBASE-T to a desk 90 m away','Cat 6a','Cat 6 only manages about 55 m at 10 Gbps.',2],
+ ['40GBASE-T between racks 20 m apart','Cat 8','Cat 8 supports 25/40GBASE-T up to 30 m.',2],
+ ['10 Gbps from a server to the top-of-rack switch, 2 m, lowest cost','DAC (twinax)','Direct-attach copper in SFP+ ports.',2],
+ ['Run through the air-return space above a drop ceiling','Plenum-rated cable','Fire-resistant, low smoke.',2],
+ ['Connect a cable modem to the wall outlet','RG-6 with F-type','75 Ω coax for cable broadband.',2],
+ ['Connector usually found on SFP transceivers','LC connector','Small form factor, latching.',2],
+ ['Green connector with an 8° polished end face','APC connector','Never mate APC with UPC (blue).',2],
+ ['Link between buildings 8 km apart at 10 Gbps','Single-mode fiber + LR optics','10GBASE-LR reaches 10 km over SMF at 1310 nm.',4],
+ ['200 m 10 Gbps link inside one data center','Multimode fiber + SR optics','10GBASE-SR covers about 300–400 m on OM3/OM4.',4],
+ ['Two sites 35 km apart over single-mode fiber at 10 Gbps','Single-mode fiber + ER optics','10GBASE-ER reaches 40 km at 1550 nm.',4],
+ ['1 Gbps over multimode fiber to a building 400 m away','1000BASE-SX optics','Multimode at 850 nm, up to about 550 m.',4],
+ ['1 Gbps to a desk 80 m away over existing Cat 5e','1000BASE-T','Uses all four pairs of Cat 5e, up to 100 m.',4],
+ ['Module for a 10 Gbps fiber port on a switch','SFP+ module','SFP = 1G, SFP+ = 10G, SFP28 = 25G.',4],
+ ['Module for a 100 Gbps uplink','QSFP28 module','QSFP+ = 40G, QSFP28 = 100G.',4],
+ ['Only one fiber strand is available, but the link must send and receive','BiDi transceiver','Sends and receives on two different wavelengths over one strand.',4],
+ ['Connect a copper-only switch port to a fiber run','Media converter','Converts the signal between copper and fiber.',4],
+ ['Carry dozens of 10G channels over one long-haul fiber pair','DWDM','Dense wavelength-division multiplexing packs many wavelengths onto one fiber.',4],
+ ['Find which patch panel port a wall jack lands on','Toner probe','"Fox and hound".',5],
+ ['Check a new patch cable\'s wire map for opens and crossed pairs','Cable tester','Continuity and pinout.',5],
+ ['Prove a new run meets the Cat 6 spec for a client handoff','Certifier','Tests performance against the category standard.',5],
+ ['Find how far down a copper run a break is','TDR','Time-domain reflectometer.',5],
+ ['Find how far down a fiber run a break is','OTDR','Optical TDR.',5],
+ ['See a fiber break or tight bend in a patch room by eye','Visual fault locator','A red laser glows at the fault.',5],
+ ['Measure received optical signal level in dBm','Optical light meter','Compare against the link\'s loss budget.',5],
+ ['Test whether a switch port or NIC transmits and receives','Loopback plug','It sends TX back to RX.',5],
+ ['Terminate cable on a 110 block','Punchdown tool','Also used for keystone jacks.',5],
+ ['Check voltage on a suspect power circuit','Multimeter','Voltage, resistance, continuity.',5],
+ ['Find which channels neighboring APs use','Wi-Fi analyzer','Shows SSIDs, channels and signal strength (Lesson 14).',14]];
+export const CABLE_SETS=[[2,'Lesson 2: cables, categories and connectors'],[4,'Lesson 4: Ethernet standards, optics and transceivers'],[5,'Lesson 5: installation and test tools'],[0,'Mixed review: everything']];
+const cableQs=set=>set?CABLE_Q.filter(q=>q[3]===set):CABLE_Q;
+VIEWS['lab-cables']=function(el,opt={}){
+  let set=[],cur=opt.set??(store.get('labs',{}).cables||{}).lastSet??2;
+  function render(){const pool=cableQs(cur),ans=[...new Set(pool.map(q=>q[1]))].sort();set=shuffle(pool).slice(0,10);const L=(store.get('labs',{}).cables||{}),b=(L.sets||{})[cur];
+    el.innerHTML=`${head('Lab · Lessons 2, 4 and 5 · Obj 1.5, 5.2','Cables, connectors and tools','A performance-based-style exercise: pick the right cable, optic or tool for each job. Each set only uses what its lesson teaches; take it right after that lesson.')}
+    <div class="row" style="margin-bottom:16px"><label for="cset" class="small">Set</label><select class="inp" id="cset" style="max-width:420px">${CABLE_SETS.map(([k,n])=>`<option value="${k}"${k===cur?' selected':''}>${n} (${cableQs(k).length} jobs)</option>`).join('')}</select><span class="hint small">${b==null?'Not attempted yet':'Best '+b+'%'}</span></div>
+    <div class="stack">${set.map((q,k)=>`<div class="field" id="cf${k}"><label for="cs${k}">${k+1}. ${esc(q[0])}</label><select id="cs${k}"><option value="">Choose…</option>${ans.map(a=>`<option>${esc(a)}</option>`).join('')}</select><span class="corr small"></span></div>`).join('')}</div>
+    <div class="row" style="margin-top:18px"><button class="btn" data-act="check">Check</button><button class="btn ghost" data-act="new">New round</button><span class="hint" id="cres"></span></div>`;
+    el.querySelector('#cset').addEventListener('change',e=>{cur=+e.target.value;markLab('cables',{lastSet:cur});render()})}
+  main.onclick=e=>{const a=e.target.closest('[data-act]');if(!a||!el.contains(a))return;if(a.dataset.act==='new')return render();
+    let r=0;set.forEach((q,k)=>{const v=el.querySelector('#cs'+k).value,f=el.querySelector('#cf'+k),ok=v===q[1];r+=ok;f.classList.toggle('ok',ok);f.classList.toggle('no',!ok);f.querySelector('.corr').textContent=ok?q[2]:`→ ${q[1]}. ${q[2]}`});
+    const pct=Math.round(r/set.length*100);el.querySelector('#cres').textContent=`${r} / ${set.length}`;markLab('cables',L=>({best:Math.max(L.best??0,pct),sets:{...(L.sets||{}),[cur]:Math.max((L.sets||{})[cur]??0,pct)}}))};
   render();
 };
 
@@ -240,7 +252,7 @@ VIEWS['lab-cli']=function(el){
     render()}
   function render(){
     const sv=solved();
-    el.innerHTML=`${head('Lab · Obj 5.3, 5.5 · Book Ch. 18, 19','CLI troubleshooting tickets','Each ticket puts you at the user\'s Windows PC. Gather evidence with real commands, then submit your diagnosis. Start with the four-step ping test: 127.0.0.1, your own IP, the default gateway, then a remote host, and finally a name to test DNS. Type <code>help</code> for the supported commands.')}
+    el.innerHTML=`${head('Lab · Lessons 9 and 21 · Obj 5.3, 5.5','CLI troubleshooting tickets','Each ticket puts you at the user\'s Windows PC. Gather evidence with real commands, then submit your diagnosis. Start with the four-step ping test: 127.0.0.1, your own IP, the default gateway, then a remote host, and finally a name to test DNS. Type <code>help</code> for the supported commands.')}
     <div class="tabs">${TICKETS.map((t,k)=>`<button class="tab ${cur===t?'on':''}" data-t="${k}">${sv.includes(t.id)?'✓ ':''}Ticket ${k+1}</button>`).join('')}</div>
     <div class="labgrid"><div class="stack"><div class="ticket"><b>TICKET · ${esc(cur.title.toUpperCase())}</b><p>${esc(cur.ticket)}</p></div><div id="tbox"></div>
       <p class="hint">Try: <code>ipconfig /all</code> · <code>ping 192.168.10.1</code> · <code>ping www.example.com</code> · <code>tracert 8.8.8.8</code> · <code>nslookup fileserver</code> · <code>arp -a</code> · <code>ipconfig /renew</code>. Arrow keys recall earlier commands.</p></div>
@@ -525,7 +537,7 @@ const SW_OBJ=[
  ['Save the configuration (after everything above is done)',s=>s.saved&&SW_OBJ.slice(0,7).every(o=>o[1](s)),'end\ncopy running-config startup-config']];
 VIEWS['lab-switch']=function(el){
   let s=newSwitch();
-  el.innerHTML=`${head('Lab · Obj 2.2 · Book Ch. 11 · CCNA preview','Switch configuration (Cisco IOS)','A simulated Catalyst 2960. Abbreviations work (<code>conf t</code>, <code>int ra fa0/1 - 12</code>, <code>sh vlan br</code>), as do <code>?</code> and <code>do</code> from config mode. Objectives tick off as you go.')}
+  el.innerHTML=`${head('Lab · Lesson 11 · Obj 2.2 · CCNA preview','Switch configuration (Cisco IOS)','A simulated Catalyst 2960. Abbreviations work (<code>conf t</code>, <code>int ra fa0/1 - 12</code>, <code>sh vlan br</code>), as do <code>?</code> and <code>do</code> from config mode. Objectives tick off as you go.')}
   <div class="labgrid"><div class="stack"><div id="sbox"></div><div class="row"><button class="btn ghost sm" data-act="reset">Reset switch</button><span class="hint">Verify your work with <code>show vlan brief</code>, <code>show interfaces trunk</code> and <code>show ip interface brief</code>.</span></div></div>
   <aside class="stack"><section class="box"><h3 style="margin-bottom:8px">Objectives</h3><ul class="objs" id="objs"></ul></section>
   <section class="box"><h3 style="margin-bottom:8px">Topology</h3><pre class="ascii">            [ R1 ]  192.168.99.1
@@ -558,7 +570,7 @@ function aclEval(rules,p){for(let k=0;k<rules.length;k++){const [act,pr,src,dst,
 VIEWS['lab-acl']=function(el){
   let idx=0;
   function render(){const A=ACLS[idx];
-    el.innerHTML=`${head('Lab · Obj 4.3 · Book Ch. 21','Firewall rule evaluation','For each packet, decide whether it is allowed and which rule decides it. This mirrors the performance-based questions where you read or fix a firewall table.')}
+    el.innerHTML=`${head('Lab · Lesson 19 · Obj 4.3','Firewall rule evaluation','For each packet, decide whether it is allowed and which rule decides it. This mirrors the performance-based questions where you read or fix a firewall table.')}
     <div class="tabs">${ACLS.map((a,k)=>`<button class="tab ${k===idx?'on':''}" data-x="${k}">${k+1}. ${a.name}</button>`).join('')}</div>
     <section class="stack"><p class="small">${A.intro}</p>
       <div class="tw"><table class="rules"><thead><tr><th>#</th><th>Action</th><th>Protocol</th><th>Source</th><th>Destination</th><th>Dest port</th></tr></thead><tbody>
@@ -594,7 +606,7 @@ const ACTIONS=[['Ask the user what changed and when the problem started',0],['Tr
 VIEWS['lab-method']=function(el){
   let order=shuffle(STEPS.map((_,k)=>k));const acts=shuffle(ACTIONS);
   function render(){
-    el.innerHTML=`${head('Lab · Obj 5.1 · Book Ch. 18','Troubleshooting methodology','Exam questions often describe an action and ask which step it belongs to, or what comes next. Know this cold.')}
+    el.innerHTML=`${head('Lab · Lesson 21 · Obj 5.1','Troubleshooting methodology','Exam questions often describe an action and ask which step it belongs to, or what comes next. Know this cold.')}
     <div class="grid2"><section class="stack"><h3>Part 1: Put the steps in order</h3><ol class="order" id="ord">${order.map((k,p)=>`<li data-k="${k}"><span>${STEPS[k]}</span><button class="mv" data-up="${p}" aria-label="Move up" ${p===0?'disabled':''}>↑</button><button class="mv" data-dn="${p}" aria-label="Move down" ${p===order.length-1?'disabled':''}>↓</button></li>`).join('')}</ol></section>
     <section class="stack"><h3>Part 2: Which step is each action?</h3>${acts.map(([a],k)=>`<div class="field" id="ma${k}"><label for="sa${k}">${esc(a)}</label><select id="sa${k}"><option value="">Choose a step…</option>${STEPS.map((s,j)=>`<option value="${j}">${j+1}. ${s}</option>`).join('')}</select></div>`).join('')}</section></div>
     <div class="row" style="margin-top:16px"><button class="btn" data-act="check">Check both parts</button><button class="btn ghost" data-act="again">Shuffle again</button><span id="mscore" class="hint"></span></div>`;

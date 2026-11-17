@@ -117,7 +117,7 @@ VIEWS.overview=function(el){
 /* ---------- corrections ---------- */
 VIEWS.corrections=function(el){
   el.innerHTML=`${head('Reference','Corrections to your study materials','Places where your Sybex book, course handouts or quiz workbook disagree with the N10-009 objectives or the underlying standards. Learn the right-hand column for the exam.')}
-  <div class="tw"><table><thead><tr><th>Where</th><th>What it says</th><th>What\'s correct</th></tr></thead><tbody>${CORRECTIONS.map(c=>`<tr><td class="small mono">${c[0]}</td><td class="small">${c[1]}</td><td class="small">${c[2]}</td></tr>`).join('')}</tbody></table></div>
+  <div class="tw"><table><thead><tr><th>Where</th><th>What it says</th><th>What\'s correct</th><th>Lesson</th></tr></thead><tbody>${CORRECTIONS.map(c=>`<tr><td class="small mono">${c[0]}</td><td class="small">${c[1]}</td><td class="small">${c[2]}</td><td class="small">${c[3]?`<a href="#notes-${c[3]}">Lesson ${c[3]}</a>`:'—'}</td></tr>`).join('')}</tbody></table></div>
   <h2 style="margin-top:26px">Terminology CompTIA uses now</h2>
   <div class="tw"><table><thead><tr><th>Older term</th><th>N10-009 term</th></tr></thead><tbody>${[['Man-in-the-middle','On-path attack'],['DMZ','Screened subnet'],['Mantrap','Access control vestibule'],['Whitelist / blacklist','Allow list / block list']].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</tbody></table></div>`;
 };
@@ -129,7 +129,7 @@ VIEWS.roadmap=function(el){
   <h2>1. CompTIA Network+ (N10-009)</h2>
   <p style="margin:8px 0 18px;max-width:70ch">Vendor-neutral foundations. Book it when every domain quiz is at 85%+, mock exams are consistently 85%+, and you can subnet a /26–/29 in under a minute. CompTIA retires exams about three years after launch (N10-009 launched June 2024), so check the objectives PDF on comptia.org before you book.</p>
   <h2>2. Cisco CCNA (200-301)</h2>
-  <p style="margin:8px 0;max-width:70ch">This is where the concepts become configuration. Packet Tracer labs 2–9 and 12 are direct CCNA preparation. CCNA v1.1 can be taken until 2 February 2027; v2.0 replaces it on 3 February 2027 with the same exam code. If you start CCNA after Network+, you'll probably sit v2.0, so buy material labelled v2.0.</p>
+  <p style="margin:8px 0;max-width:70ch">This is where the concepts become configuration. Packet Tracer labs 2–7 and 10–12 are direct CCNA preparation. CCNA v1.1 can be taken until 2 February 2027; v2.0 replaces it on 3 February 2027 with the same exam code. If you start CCNA after Network+, you'll probably sit v2.0, so buy material labelled v2.0.</p>
   <h2 style="margin-top:18px">3. "MCSA" → Windows Server Administrator (AZ-802)</h2>
   <p style="margin:8px 0;max-width:70ch">Microsoft retired the MCSA in 2021. The closest current certification is Windows Server Administrator Associate (formerly Windows Server Hybrid Administrator), earned since 30 September 2026 with the single exam AZ-802, which replaced AZ-800 and AZ-801. Confirm with your manager that this is what they mean. If the role is cloud-focused, AZ-104 (Azure Administrator) may be the intended target. Your DNS, DHCP and AAA knowledge from Network+ carries straight over.</p>
   <h2 style="margin-top:18px">Links</h2>

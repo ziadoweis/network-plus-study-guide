@@ -31,8 +31,8 @@ VIEWS.quiz=function(el){
   <h2 style="margin-top:26px">By domain</h2>
   <ul class="list">${DOMAINS.map(d=>{const n=QB.filter(q=>qDom(q)===d.id).length,b=best[d.id];return `<li><button class="link" data-k="d${d.id}">${d.id}.0 ${d.name}</button><span class="meta">${n} questions · ${b==null?'not attempted':'best '+b+'%'}</span></li>`}).join('')}
   <li><button class="link" data-k="all">All domains, shuffled</button><span class="meta">${QB.length} questions</span></li></ul>
-  <h2 style="margin-top:26px">By book chapter</h2>
-  <p class="hint">Questions from the objectives each Sybex chapter covers. Take it right after you finish the chapter.</p>
+  <h2 style="margin-top:26px">By Sybex book chapter</h2>
+  <p class="hint">Optional mixed review: questions from the objectives each book chapter covers, which can span several lessons. Use the lesson quizzes above while working through the course.</p>
   <div class="row" style="margin-top:10px"><select class="inp" id="chsel" style="max-width:420px">${CHAPTERS.map((c,i)=>`<option value="c${i+1}">Ch. ${i+1} ${c} (${chCount(i+1)})</option>`).join('')}</select><button class="btn" data-go="ch">Start</button></div>
   <h2 style="margin-top:26px">By objective</h2>
   <div class="row" style="margin-top:10px"><select class="inp" id="obsel" style="max-width:420px">${Object.keys(OBJ).map(o=>`<option value="o${o}">${o} ${OBJ[o][0]} (${QB.filter(q=>q[0]===o).length})</option>`).join('')}</select><button class="btn" data-go="ob">Start</button></div>`;

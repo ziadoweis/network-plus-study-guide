@@ -60,6 +60,7 @@ ${TB(['Device','Interface','IPv4 address','Mask','Gateway'],[['SW1','VLAN 1','19
 <li>Go back to <b>Realtime</b>. Run <code>arp -a</code> on PC1. On SW1's CLI run <code>show mac address-table</code> and match each MAC to its port.</li>
 </ol>
 <h3>Part 4: Basic switch configuration over the console</h3>
+<p class="hint"><b>When:</b> Parts 1–3 only need Lesson 6. Do Parts 4 and 5 after Lesson 13, which explains console access, management passwords and SSH. Save your file after Part 3 so you can come back to it.</p>
 <ol class="steps"><li>PC1 → <b>Desktop → Terminal</b> → OK (9600 baud, 8N1 defaults). Press Enter until you see <code>Switch&gt;</code>. Enter:</li></ol>
 ${C('SW1',`
 enable
@@ -568,6 +569,7 @@ show ntp status
 show clock`)}
 <p>After a short while (Fast Forward helps), <code>show ntp status</code> reports "Clock is synchronized" at a stratum one higher than the server's.</p>
 <h3>Part 4: Syslog</h3>
+<p class="hint"><b>When:</b> Parts 4 and 5 go with Lesson 20 (Network Monitoring). Do Parts 1–3 and 6 after Lesson 9, save the file, and return here after Lesson 20.</p>
 <ol class="steps"><li>Server-Core → <b>Services → SYSLOG</b>: turn it On.</li></ol>
 ${C('R1',`
 configure terminal
@@ -581,6 +583,7 @@ interface loopback1
 ${NOTE('Older Packet Tracer images use <code>logging 192.168.1.10</code> instead of <code>logging host</code>.')}
 <ol class="steps"><li>Check Server-Core's SYSLOG list. You'll see messages such as <code>%LINK-5-CHANGED</code> and <code>%LINEPROTO-5-UPDOWN</code>. The number after the facility is the severity: 5 = Notice. 0 is Emergency and 7 is Debug.</li></ol>
 <h3>Part 5: SNMP</h3>
+<p class="hint"><b>When:</b> after Lesson 20, together with Part 4.</p>
 ${C('R1',`
 configure terminal
 snmp-server community LabRO ro

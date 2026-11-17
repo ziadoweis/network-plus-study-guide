@@ -27,20 +27,20 @@ export const LABS=[
 
 
 export const CORRECTIONS=[
- ['Handouts','Objective numbers like "1.5 ports" or "4.5 physical security"','These follow the older N10-008 numbering. In N10-009, ports are 1.4 and physical security is part of 4.1.'],
- ['Quiz Q2.2','"RG-32" as the common cable/broadband coax','RG-32 is not a common grade. Cable broadband uses RG-6 (75 Ω, F-type). RG-59 is older and thinner.'],
- ['Quiz & handouts','"SPF" transceivers','A typo for SFP (small form-factor pluggable).'],
- ['Quiz Q6.5','Class A = 0–126','The usable Class A first-octet range is 1–126. 0 is reserved and 127 is loopback.'],
- ['Handouts','"PoE+ 802.3af, 15.4 W"','802.3af is plain PoE at 15.4 W. PoE+ is 802.3at at 30 W. PoE++ is 802.3bt at 60 or 90–100 W.'],
- ['Handouts','"Kerberos is a Microsoft proprietary technology"','Kerberos is an open standard from MIT (RFC 4120). Active Directory implements it.'],
- ['Handouts','"Encapsulating Security Payload (EAP)"','The abbreviation is ESP (IPsec). EAP is the Extensible Authentication Protocol used with 802.1X.'],
- ['Book Ch. 12','MU-MIMO is "used in the new 802.11ax" (and "802.11zc")','Downlink MU-MIMO arrived with 802.11ac Wave 2. 802.11ax added uplink MU-MIMO and OFDMA. "802.11zc" is a typo for 802.11ac.'],
- ['Book Ch. 3','Cat 6 is "used for 1000BaseTX (two pair)"','Standard gigabit copper is 1000BASE-T and uses all four pairs on Cat 5e or better.'],
- ['Book / objectives','SMTPS port','For the exam, use 587 (submission with STARTTLS). Port 465 is SMTP over implicit TLS.'],
- ['Quiz Q10.4','RBAC = "assigning rights to a folder based on a user"','RBAC assigns rights by role or job function. Per-user rights set by the owner are closer to DAC.'],
- ['Quiz Q13.6','"L2TP/IPsec is used by Cisco"','L2TP is an IETF open standard (it merged Cisco\'s L2F and Microsoft\'s PPTP). Many vendors use it.'],
- ['Quiz Q18.9','"Cloud site is fastest" to recover','The textbook answer is a hot site. A cloud site only qualifies if it is kept hot.'],
- ['Quiz','Misaligned or misnumbered rows (2.8, 5.3/15.3, 7.6, and 6.10/8.10/18.10/19.10 shown as 6.1/8.1/18.1/19.1)','Check the question against the answer key before trusting those items.']];
+ ['Handouts','Objective numbers like "1.5 ports" or "4.5 physical security"','These follow the older N10-008 numbering. In N10-009, ports are 1.4 and physical security is part of 4.1.',0],
+ ['Quiz Q2.2','"RG-32" as the common cable/broadband coax','RG-32 is not a common grade. Cable broadband uses RG-6 (75 Ω, F-type). RG-59 is older and thinner.',2],
+ ['Quiz & handouts','"SPF" transceivers','A typo for SFP (small form-factor pluggable).',4],
+ ['Quiz Q6.5','Class A = 0–126','The usable Class A first-octet range is 1–126. 0 is reserved and 127 is loopback.',6],
+ ['Handouts','"PoE+ 802.3af, 15.4 W"','802.3af is plain PoE at 15.4 W. PoE+ is 802.3at at 30 W. PoE++ is 802.3bt at 60 or 90–100 W.',11],
+ ['Handouts','"Kerberos is a Microsoft proprietary technology"','Kerberos is an open standard from MIT (RFC 4120). Active Directory implements it.',10],
+ ['Handouts','"Encapsulating Security Payload (EAP)"','The abbreviation is ESP (IPsec). EAP is the Extensible Authentication Protocol used with 802.1X.',10],
+ ['Book Ch. 12','MU-MIMO is "used in the new 802.11ax" (and "802.11zc")','Downlink MU-MIMO arrived with 802.11ac Wave 2. 802.11ax added uplink MU-MIMO and OFDMA. "802.11zc" is a typo for 802.11ac.',14],
+ ['Book Ch. 3','Cat 6 is "used for 1000BaseTX (two pair)"','Standard gigabit copper is 1000BASE-T and uses all four pairs on Cat 5e or better.',4],
+ ['Book / objectives','SMTPS port','For the exam, use 587 (submission with STARTTLS). Port 465 is SMTP over implicit TLS.',8],
+ ['Quiz Q10.4','RBAC = "assigning rights to a folder based on a user"','RBAC assigns rights by role or job function. Per-user rights set by the owner are closer to DAC.',10],
+ ['Quiz Q13.6','"L2TP/IPsec is used by Cisco"','L2TP is an IETF open standard (it merged Cisco\'s L2F and Microsoft\'s PPTP). Many vendors use it.',13],
+ ['Quiz Q18.9','"Cloud site is fastest" to recover','The textbook answer is a hot site. A cloud site only qualifies if it is kept hot.',16],
+ ['Quiz','Misaligned or misnumbered rows (2.8, 5.3/15.3, 7.6, and 6.10/8.10/18.10/19.10 shown as 6.1/8.1/18.1/19.1)','Check the question against the answer key before trusting those items.',0]];
 
 /* Practice pages for each objective */
 export const OBJ_PRACTICE={'1.1':['lab-osi'],'1.4':['lab-ports'],'1.5':['lab-cables'],'1.7':['lab-subnet'],'1.8':['lab-subnet','pt-ipv6'],

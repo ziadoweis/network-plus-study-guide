@@ -21,13 +21,14 @@ interface range fa0/1 - 12
 interface gi0/1
  switchport mode trunk
  switchport trunk native vlan 99
- switchport trunk allowed vlan 10,20,99`),P('Check with <code>show vlan brief</code> (trunk ports don\'t appear there) and <code>show interfaces trunk</code>. You practise this in the Switch configuration lab and Packet Tracer lab 2.'))+
+ switchport trunk allowed vlan 10,20,99`),P('Check with <code>show vlan brief</code> (trunk ports don\'t appear there) and <code>show interfaces trunk</code>. You practise this in the Switch configuration lab and Packet Tracer lab 6.'))+
 H3('Other VLAN features')+
 UL('A <b>voice VLAN</b> lets an IP phone and a PC share one wall port: the phone tags its voice traffic into the voice VLAN while the PC\'s traffic stays in the data VLAN.',
  'An <b>SVI (switch virtual interface)</b> is a VLAN\'s Layer 3 interface on a switch, such as <code>interface vlan 99</code>. It gives the switch a management IP, and on a Layer 3 switch it acts as the VLAN\'s gateway for inter-VLAN routing.',
- '<b>VTP</b> (Cisco) copies the VLAN list between switches. <b>DTP</b> (Cisco) automatically negotiates trunks. Turn DTP off on access ports, because an attacker could use it to form a trunk.',
+ '<b>VTP</b> (Cisco) copies the VLAN list between switches. <b>DTP</b> (Cisco) automatically negotiates trunks. Turn DTP off on access ports (<code>switchport mode access</code>, or <code>switchport nonegotiate</code> on trunks), because an attacker could use it to form a trunk.',
  '<b>Private VLANs</b> (port isolation) stop devices in the same VLAN from talking to each other, as on hotel or guest networks.')+
 P('Whenever a newly connected device gets an address from the wrong subnet or can\'t reach its usual resources, <b>check which VLAN the port is in</b>.')+
+P('Two habits keep a switch tidy and safer. <b>Shut down unused ports</b> (<code>shutdown</code>) so nobody can plug in and get access, and move them into an unused <b>"parking" VLAN</b> so that if one is ever enabled by mistake it lands nowhere. And to see what is plugged into each port, <b>CDP</b> (Cisco) or <b>LLDP</b> (the open standard) lets neighbouring devices announce their name, model and port: <code>show cdp neighbors</code>.')+
 H('Spanning Tree Protocol: preventing loops')+F.stp+
 P('Redundant links between switches are good for resilience, but Ethernet has no TTL. If two switches are connected twice, a broadcast goes around the loop forever, multiplying each time. Within seconds you get a <b>broadcast storm</b>: links saturate, switch CPUs spike, MAC tables flap as the same address appears on different ports, and the network collapses.',
  '<b>Spanning Tree Protocol (STP, IEEE 802.1D)</b> prevents this by logically <b>blocking</b> redundant links until they\'re needed.')+
@@ -89,7 +90,7 @@ P('IPv6 replaces ARP and router discovery with <b>NDP</b>, which uses ICMPv6 mes
 TB(['Message','Purpose'],[['Router Solicitation (RS)','A host asks "are there any routers here?"'],['Router Advertisement (RA)','A router announces itself, the subnet prefix and the default gateway'],['Neighbor Solicitation (NS)','"Who has this IPv6 address?" (like an ARP request)'],['Neighbor Advertisement (NA)','"I do, here\'s my MAC" (like an ARP reply)'],['Redirect','Tells a host about a better next hop']])+
 H('How hosts get addresses')+
 UL('<b>SLAAC (stateless address autoconfiguration)</b>: the host hears an RA, takes the /64 prefix, and builds its own address by adding its interface ID. No server is needed, and the router\'s link-local address becomes the default gateway.',
- '<b>Stateless DHCPv6</b>: the host builds its address with SLAAC but gets extra settings such as DNS servers from a DHCPv6 server.',
+ '<b>Stateless DHCPv6</b>: the host builds its address with SLAAC but gets extra settings such as DNS servers from a DHCPv6 server. The router\'s RA tells hosts to do this by setting the <b>O (other configuration) flag</b>; on Cisco that\'s <code>ipv6 nd other-config-flag</code>.',
  '<b>Stateful DHCPv6</b>: a DHCPv6 server assigns the address itself, much like DHCP in IPv4.')+
 H('Running IPv4 and IPv6 together')+
 P('The Internet will run both for years, so several transition methods exist:')+
@@ -135,7 +136,30 @@ TB(['Method','What it is'],[
  ['RDP / VNC','Remote desktop: RDP (3389) for Windows, VNC (5900) for many systems. A Remote Desktop Gateway or VDI can broker these.']])+
 UL('A <b>jump box</b> (jump host or bastion host) is a hardened server that administrators connect to first, and only from there reach the management interfaces of sensitive systems. It centralizes control and logging.',
  '<b>In-band management</b> uses the production network itself. <b>Out-of-band (OOB) management</b> uses a separate path, such as a console server reached over a dedicated management network or a cellular modem, so you can still reach devices when the production network is down.')+
-KEY('The demarc is where the provider\'s responsibility ends.','MPLS = label switching; DSL: ADSL asymmetric, SDSL symmetric; satellite = high latency.','SD-WAN = several links, central policy, zero-touch provisioning.','Site-to-site (gateways), client-to-site (concentrator), clientless (browser, TLS).','Split tunnel = only corporate traffic in the VPN; full tunnel = everything.','Out-of-band management works when the network is down. Jump box = hardened entry point.','RDP 3389, VNC 5900, SSH 22.')+
+H3('Securing management access on a Cisco device')+
+P('Whatever the path, the device itself must protect its management access. A new switch or router has no passwords at all, so the first job on the <b>console</b> (the in-person, out-of-band port) is to lock it down:')+
+UL('<b>enable secret</b> sets the password for privileged (#) mode and stores it as a hash. The older <i>enable password</i> is stored in clear text, so don\'t use it.',
+ '<b>line console 0</b> with <b>password</b> and <b>login</b> makes the console ask for a password; <b>exec-timeout 10 0</b> logs out an idle session after 10 minutes.',
+ '<b>service password-encryption</b> scrambles any remaining clear-text passwords in the configuration. It\'s weak (type 7, easily reversed) but stops someone reading them over your shoulder.',
+ 'A <b>login banner</b> (<b>banner motd</b>) warns that access is for authorized users only, which matters if an intrusion ends up in court.',
+ 'A <b>management IP address</b>: a switch gets one on an SVI such as <code>interface vlan 1</code> or a dedicated management VLAN (Lesson 11), plus <code>ip default-gateway</code> so it can be managed from other subnets.')+
+P('Remote command-line access goes over the <b>VTY lines</b> (virtual terminal lines, <code>line vty 0 15</code>). Allow only SSH there: Telnet sends everything, passwords included, in clear text. SSH needs a hostname, a domain name and an RSA key pair to encrypt the session, plus a local user account to log in with.')+
+EX('Worked example: console security, then SSH-only remote access',PRE(`enable secret Class123
+line console 0
+ password Cisco123
+ login
+ exec-timeout 10 0
+service password-encryption
+banner motd # Authorized access only #
+ip domain-name lab.local
+username admin secret Admin123
+crypto key generate rsa        ! 1024 bits or more
+ip ssh version 2
+line vty 0 15
+ login local                    ! use the local user account
+ transport input ssh            ! refuse Telnet
+copy running-config startup-config`),P('You build exactly this in Packet Tracer lab 1, Parts 4 and 5. Check it with <code>show ip ssh</code>, and confirm that a Telnet attempt is refused.'))+
+KEY('Lock down the console with enable secret, a console password and exec-timeout; allow only SSH on the VTY lines (transport input ssh, login local).','The demarc is where the provider\'s responsibility ends.','MPLS = label switching; DSL: ADSL asymmetric, SDSL symmetric; satellite = high latency.','SD-WAN = several links, central policy, zero-touch provisioning.','Site-to-site (gateways), client-to-site (concentrator), clientless (browser, TLS).','Split tunnel = only corporate traffic in the VPN; full tunnel = everything.','Out-of-band management works when the network is down. Jump box = hardened entry point.','RDP 3389, VNC 5900, SSH 22.')+
 TRAPS('L2TP is an IETF open standard, not "used by Cisco" as one quiz says.','A clientless VPN still encrypts, using TLS.','When the production network is down, the answer is out-of-band management.')},
 
 /* ------------------------------------------------------------------ 14 */
