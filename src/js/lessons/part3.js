@@ -1,4 +1,5 @@
 import {H,H3,P,UL,OL,TB,EX,PRE,KEY,TRAPS} from './h.js';
+import * as F from './figs3.js';
 
 export const LESSONS=[
 /* ------------------------------------------------------------------ 11 */
@@ -8,7 +9,7 @@ html:
 H('VLANs: many networks on one switch')+
 P('By default every port on a switch is in one big broadcast domain: every broadcast reaches every device. As networks grow, that wastes bandwidth and lets anyone see everyone. A <b>VLAN (virtual LAN)</b> splits a switch into separate logical networks. Devices in VLAN 10 (Sales) and VLAN 20 (HR) can share the same switch but can\'t reach each other without a router, exactly as if they were on separate switches.',
  'Each VLAN is its own <b>broadcast domain</b> and normally its own IP subnet. VLAN IDs run from 1 to 4094; <b>VLAN 1</b> is the default that every port starts in.')+
-H3('Access ports and trunk ports')+
+H3('Access ports and trunk ports')+F.trunk+
 P('An <b>access port</b> belongs to one VLAN and connects an end device. Frames on it are ordinary, <b>untagged</b> Ethernet frames; the PC doesn\'t even know VLANs exist.',
  'A <b>trunk port</b> carries many VLANs over one link, usually between switches or from a switch to a router. To keep them apart, each frame gets an <b>802.1Q tag</b>: 4 bytes inserted into the Ethernet header, holding a 12-bit VLAN ID (hence 4094 usable VLANs) and a 3-bit priority value used for QoS.',
  'One VLAN on each trunk, the <b>native VLAN</b>, is sent <b>untagged</b>. It\'s VLAN 1 by default. Both ends must agree on it, otherwise untagged traffic lands in the wrong VLAN. Best practice is to change it to an unused VLAN with no devices in it (this defeats the double-tagging attack in Lesson 19).')+
@@ -27,7 +28,7 @@ UL('A <b>voice VLAN</b> lets an IP phone and a PC share one wall port: the phone
  '<b>VTP</b> (Cisco) copies the VLAN list between switches. <b>DTP</b> (Cisco) automatically negotiates trunks. Turn DTP off on access ports, because an attacker could use it to form a trunk.',
  '<b>Private VLANs</b> (port isolation) stop devices in the same VLAN from talking to each other, as on hotel or guest networks.')+
 P('Whenever a newly connected device gets an address from the wrong subnet or can\'t reach its usual resources, <b>check which VLAN the port is in</b>.')+
-H('Spanning Tree Protocol: preventing loops')+
+H('Spanning Tree Protocol: preventing loops')+F.stp+
 P('Redundant links between switches are good for resilience, but Ethernet has no TTL. If two switches are connected twice, a broadcast goes around the loop forever, multiplying each time. Within seconds you get a <b>broadcast storm</b>: links saturate, switch CPUs spike, MAC tables flap as the same address appears on different ports, and the network collapses.',
  '<b>Spanning Tree Protocol (STP, IEEE 802.1D)</b> prevents this by logically <b>blocking</b> redundant links until they\'re needed.')+
 OL('Switches exchange <b>BPDUs</b> (bridge protocol data units) and elect a <b>root bridge</b>: the switch with the <b>lowest bridge ID</b>. The bridge ID is the priority (default 32768) followed by the MAC address, so the lowest priority wins and the lowest MAC breaks ties. Lower the priority on your core switch so the root isn\'t chosen by accident.',
@@ -68,7 +69,7 @@ P('Two rules shorten it:')+
 OL('<b>Drop leading zeros</b> in any group: <code>0db8</code> → <code>db8</code>, <code>0370</code> → <code>370</code>, <code>0000</code> → <code>0</code>.','<b>Replace one run of consecutive all-zero groups with ::</b>. You may use :: only <b>once</b> per address, otherwise nobody could tell how many zeros each one stands for. If there are two equal runs, compress the leftmost.')+
 EX('Worked example',P('2001:0db8:0000:0000:0000:8a2e:0370:7334 → 2001:db8:0:0:0:8a2e:370:7334 → <b>2001:db8::8a2e:370:7334</b>'),P('To expand, put the zeros back: :: stands for as many 0000 groups as needed to make eight groups in total.'))+
 P('A typical address is split into a <b>/48</b> site prefix from the provider, a 16-bit subnet ID making a <b>/64</b> subnet, and a 64-bit <b>interface ID</b> identifying the device. Nearly every IPv6 LAN is a /64.')+
-H('Address types')+
+F.v6+H('Address types')+
 TB(['Type','Prefix','IPv4 equivalent','Notes'],[
  ['Global unicast','2000::/3','Public address','Routable on the Internet'],
  ['Link-local','<b>fe80::/10</b>','APIPA (169.254)','Every interface always has one; never routed beyond the local link'],
@@ -78,7 +79,7 @@ TB(['Type','Prefix','IPv4 equivalent','Notes'],[
  ['Unspecified','::','0.0.0.0','No address yet'],
  ['Anycast','From the unicast space','—','Delivered to the nearest device sharing the address']])+
 P('<b>IPv6 has no broadcast.</b> Jobs that used broadcast in IPv4, such as finding a neighbour\'s MAC address, use multicast instead.')+
-H('Interface IDs and EUI-64')+
+H('Interface IDs and EUI-64')+F.eui+
 P('A host can build its own 64-bit interface ID from its 48-bit MAC address using <b>modified EUI-64</b>:')+
 OL('Split the MAC in half.','Insert <b>FFFE</b> in the middle, making 64 bits.','<b>Flip the 7th bit</b> of the first byte (the universal/local bit).')+
 EX('Worked example: MAC 00:1A:2B:3C:4D:5E',UL('Split: 001A2B | 3C4D5E','Insert FFFE: 001A2B<b>FFFE</b>3C4D5E','Flip the 7th bit: 00 (0000 0000) becomes 02 (0000 0010)','Interface ID: <b>021A:2BFF:FE3C:4D5E</b>'))+
@@ -113,13 +114,13 @@ TB(['Technology','How it works','Notes'],[
  ['Satellite','Signals relayed by satellite','Geostationary has <b>high latency</b> (about 600 ms or more round trip) and weather sensitivity; low-earth-orbit systems are much faster'],
  ['Cellular','4G LTE and 5G','5G low bands reach far; high (mmWave) bands are very fast but short-range']])+
 P('<b>SD-WAN (software-defined WAN)</b> combines several of these, such as MPLS, broadband and LTE, and steers each application over the best link according to a <b>central policy</b>. New branch devices can be shipped and set themselves up automatically (<b>zero-touch provisioning</b>).')+
-H('VPNs: private connections over public networks')+
+H('VPNs: private connections over public networks')+F.vpn+
 P('A <b>VPN</b> builds an encrypted tunnel across an untrusted network, usually the Internet, so traffic inside it can\'t be read or altered.')+
 TB(['VPN type','Connects','How'],[
  ['Site-to-site','Whole networks, such as a branch to headquarters','Two gateways (routers or firewalls) keep a permanent tunnel up, usually with IPsec; users notice nothing'],
  ['Client-to-site (remote access)','One user to the corporate network','VPN client software connects to a <b>VPN concentrator</b> (headend)'],
  ['Clientless','One user, through a web browser','An SSL/TLS VPN portal; no client software needed']])+
-H3('Split tunnel vs full tunnel')+
+H3('Split tunnel vs full tunnel')+F.split+
 P('With a <b>full tunnel</b>, all of a remote user\'s traffic, including Internet browsing, goes through the VPN to the company, where it can be inspected and filtered. It\'s more secure but uses more company bandwidth. With a <b>split tunnel</b>, only traffic for corporate networks goes through the VPN and everything else goes straight to the Internet. That saves bandwidth but the company can\'t see or protect that traffic.')+
 H3('VPN protocols')+
 UL('<b>IPsec</b> (with IKEv2) is the standard for site-to-site VPNs. Tunnel mode wraps the whole packet; transport mode protects only the payload (Lesson 8).',
@@ -151,14 +152,14 @@ TB(['Standard','Name','Band(s)','Max rate','What it added'],[
  ['802.11ac','Wi-Fi 5','5 GHz','≈ 6.9 Gbps','80/160 MHz channels; Wave 2 added <b>downlink MU-MIMO</b>'],
  ['802.11ax','Wi-Fi 6 / 6E','2.4, 5 GHz (6E adds <b>6 GHz</b>)','≈ 9.6 Gbps','<b>OFDMA</b>, uplink MU-MIMO, BSS colouring; built for crowded spaces']])+
 P('<b>MIMO</b> uses multiple antennas to send several data streams at once. <b>MU-MIMO</b> (multi-user) sends to several clients at the same time. <b>OFDMA</b> splits one channel into small pieces so many clients can share it in the same moment, which is why Wi-Fi 6 copes so much better in busy offices and stadiums.')+
-H('Bands and channels')+
+H('Bands and channels')+F.chan+
 UL('<b>2.4 GHz</b> travels further and through walls better, but has only three <b>non-overlapping 20 MHz channels: 1, 6 and 11</b> (in North America), and it\'s crowded with interference from microwaves, Bluetooth and cordless phones.',
  '<b>5 GHz</b> has many more channels and less interference but shorter range. Some 5 GHz channels require <b>DFS (dynamic frequency selection)</b>, which moves the AP off a channel if radar is detected, and <b>TPC</b> (transmit power control); both came with 802.11h.',
  '<b>6 GHz</b> (Wi-Fi 6E) offers the most clean spectrum, and <b>WPA3 is required</b> there.',
  '<b>Channel width</b>: bonding channels into 40, 80 or 160 MHz increases throughput but leaves fewer non-overlapping channels for neighbouring APs.',
  'Regulators (the FCC in the US, NTRA in Egypt) decide which channels and power levels are legal, so they differ by country.')+
 EX('Worked example: channel planning',P('Three APs cover an office in 2.4 GHz. Put them on channels <b>1, 6 and 11</b>. If two neighbouring APs both use channel 6, they cause <b>co-channel interference</b>: they have to take turns using the air, halving throughput. Using channel 3 would overlap 1 and 6 (<b>adjacent-channel interference</b>), which is even worse.'))+
-H('Parts of a wireless network')+
+H('Parts of a wireless network')+F.ess+
 TB(['Term','Meaning'],[['SSID','The network name users see'],['BSSID','The MAC address of one AP\'s radio'],['BSS','One AP and its clients'],['ESS','Several APs sharing one SSID so clients can <b>roam</b> between them'],['IBSS','An ad hoc network with no AP']])+
 UL('<b>Infrastructure mode</b>: clients connect through APs (normal). <b>Ad hoc</b>: devices connect directly with no AP. <b>Point-to-point</b>: a wireless bridge linking two buildings. <b>Mesh</b>: APs relay traffic for each other, healing around failures.',
  '<b>Autonomous</b> APs are configured one by one. <b>Lightweight</b> APs are managed centrally by a <b>wireless LAN controller (WLC)</b>, which pushes settings, channels and power levels.')+
@@ -193,7 +194,7 @@ UL('A <b>Type 1</b> (bare-metal) hypervisor runs directly on the hardware: VMwar
  'A <b>Type 2</b> (hosted) hypervisor runs as an application on a normal operating system: VirtualBox, VMware Workstation. It\'s used on desktops and laptops.',
  'VMs connect to a <b>virtual switch (vSwitch)</b> inside the host through <b>virtual NICs</b>, and the vSwitch connects to the physical network.',
  '<b>NFV (network functions virtualization)</b> runs network appliances, such as routers, firewalls and load balancers, as VMs instead of dedicated hardware.')+
-H('Cloud service models')+
+H('Cloud service models')+F.resp+
 P('The service model decides how much the provider manages and how much you manage.')+
 TB(['Model','Provider manages','You manage','Example'],[
  ['IaaS (infrastructure)','Hardware, network, storage, virtualization','Operating system, runtime, applications, data','Renting VMs'],
@@ -204,7 +205,7 @@ H('Deployment models and cloud characteristics')+
 UL('<b>Public cloud</b>: shared infrastructure owned by a provider. <b>Private cloud</b>: used by one organization only. <b>Hybrid</b>: a mix of both. <b>Community</b>: shared by organizations with common needs.',
  '<b>Scalability</b> is the ability to add capacity: scale <i>up</i> (a bigger instance) or scale <i>out</i> (more instances). <b>Elasticity</b> is scaling up and down <b>automatically</b> as demand changes, so you only pay for what you use.',
  '<b>Multitenancy</b>: many customers share the same physical hardware, kept logically isolated.')+
-H('Cloud networking')+
+H('Cloud networking')+F.vpc+
 P('In the cloud, your network is a <b>VPC (virtual private cloud)</b>: an isolated private network inside the provider\'s cloud, divided into subnets.')+
 TB(['Component','What it does'],[
  ['Internet gateway','Gives a public subnet two-way Internet access'],
@@ -213,7 +214,7 @@ TB(['Component','What it does'],[
  ['Network security list / NACL','A firewall applied to a whole <b>subnet</b>; usually <b>stateless</b>, so return traffic needs its own rule'],
  ['VPN / direct connection','Links your office to the VPC: a site-to-site VPN over the Internet, or a dedicated private circuit for consistent performance']])+
 H('Evolving use cases (Objective 1.8)')+
-H3('SDN: software-defined networking')+
+H3('SDN: software-defined networking')+F.sdn+
 P('Traditionally every router and switch makes its own forwarding decisions. <b>SDN</b> separates the <b>control plane</b> (deciding where traffic should go) from the <b>data plane</b> (actually moving the packets). The decisions move to a central <b>controller</b>, which programs every device through <b>southbound APIs</b>, while applications ask the controller for what they need through <b>northbound APIs</b>. The <b>management plane</b> handles configuration and monitoring, and the <b>application plane</b> holds the apps that use the network. Instead of configuring 200 switches one by one, you change policy in one place.')+
 H3('SD-WAN, VXLAN and SASE')+
 UL('<b>SD-WAN</b> applies the same idea to WAN links: it sends each application over the best available link (MPLS, broadband, LTE) according to central policy, with zero-touch provisioning for new sites (Lesson 13).',
@@ -237,12 +238,7 @@ TB(['Layer','Job'],[['Core','A fast, highly redundant backbone that just moves t
 P('Smaller sites often use a <b>collapsed core</b>, merging the core and distribution layers into one to save cost.')+
 H3('Spine and leaf')+
 P('Modern data centers use <b>spine-and-leaf</b>. Every <b>leaf</b> switch connects to every <b>spine</b> switch, and leaves never connect to each other. Servers plug into leaves, often a <b>top-of-rack (ToR)</b> switch in each rack. Any server can reach any other in exactly the same number of hops (leaf → spine → leaf), which gives predictable, low latency and lots of parallel paths.')+
-PRE(`  Spine1      Spine2
-   │ ╲      ╱ │
-   │   ╲  ╱   │
-   │   ╱  ╲   │
- Leaf1      Leaf2   ← every leaf connects to every spine
- servers    servers`)+
+F.dcarch+
 P('Traffic direction matters for design. <b>North-south</b> traffic goes in and out of the data center, between users or the Internet and servers. <b>East-west</b> traffic flows between servers inside the data center, such as a web server querying a database. Modern applications generate mostly east-west traffic, which is why spine-and-leaf replaced three-tier in data centers.')+
 H('Storage networking')+
 P('Servers reach shared storage in two ways. A <b>NAS</b> shares <b>files</b> over the normal network (SMB, NFS). A <b>SAN</b> provides <b>block-level</b> storage that the server treats like a local disk, over a dedicated network: <b>Fibre Channel</b> (its own high-speed fabric, reached through a <b>host bus adapter</b>), <b>FCoE</b> (Fibre Channel carried over Ethernet), or <b>iSCSI</b> (SCSI commands over IP). SANs often use jumbo frames.')+
@@ -264,7 +260,7 @@ TB(['Site','What\'s there','Recovery time','Cost'],[
  ['Warm site','Some equipment and connectivity; data must be restored from backup','Hours to days','Medium'],
  ['Hot site','Fully equipped with near-real-time copies of the data','Minutes to hours: <b>the fastest</b>','Highest'],
  ['Cloud site','Recovery infrastructure in a cloud provider','Depends on how it\'s set up: a cloud site kept running ("hot") is fast','Varies']])+
-H3('Backups')+
+H3('Backups')+F.backup+
 TB(['Type','What it copies','To restore you need'],[
  ['Full','Everything','Just that backup'],
  ['Incremental','Changes since the <b>last backup of any type</b>','The last full plus <b>every</b> incremental since; fastest to back up, slowest to restore'],

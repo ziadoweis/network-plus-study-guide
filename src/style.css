@@ -248,6 +248,24 @@ a.btn{text-decoration:none}
 .nl{margin:6px 0;padding-left:1.25em;display:grid;gap:5px;max-width:74ch;font-size:.94rem}
 .notes .tw table{margin:4px 0}
 .notes td,.notes th{font-size:.88rem}
+/* lesson diagrams */
+.fig{margin:16px 0 20px;padding:16px 12px 10px;border:1px solid var(--line);border-radius:4px;background:#15181c;overflow-x:auto}
+.fig figcaption{margin:10px auto 0;max-width:72ch;font-size:.84rem;color:var(--muted);line-height:1.5}
+.dg{display:block;margin:0 auto;max-width:100%;height:auto}
+@media (max-width:640px){.dg{max-width:none;width:max(100%,min(540px,var(--w)))}.fig::before{content:"Swipe sideways to see the whole diagram →";display:block;position:sticky;left:0;margin-bottom:8px;font-size:.75rem;color:var(--muted)}}
+.dg text{fill:var(--ink);font-family:var(--body);font-size:14px}
+.dg .sm{font-size:12px}.dg .xs{font-size:11px}.dg .hd{font-weight:600}.dg .mo{font-family:var(--mono);font-size:12.5px}
+.dg .tm{fill:var(--muted)}.dg .ta{fill:var(--accent)}.dg .tg{fill:var(--good)}.dg .tb{fill:var(--bad)}
+.dg rect,.dg circle,.dg ellipse,.dg polygon{fill:var(--panel);stroke:#3c434b;stroke-width:1.2}
+.dg .dev{fill:#1e2329;stroke:#5b6670}
+.dg .cloud{fill:none;stroke:#5b6670;stroke-dasharray:5 4}
+.dg .fa{fill:#1b2a34}.dg .fg{fill:#1a2b22}.dg .fb{fill:#2f1f1c}.dg .fn{fill:none}
+.dg .ac{stroke:var(--accent)}.dg .ok{stroke:var(--good)}.dg .no{stroke:var(--bad)}
+.dg .ln{stroke:#6c7680;stroke-width:1.5;fill:none}
+.dg .ln.ac{stroke:var(--accent)}.dg .ln.ok{stroke:var(--good)}.dg .ln.no{stroke:var(--bad)}
+.dg .dash{stroke-dasharray:5 4}.dg .thick{stroke-width:3}.dg .dim{opacity:.35}
+.dg .tun{stroke:var(--accent);stroke-width:12;opacity:.28;fill:none;stroke-linecap:round}
+.dg .m0{fill:#6c7680}.dg .m1{fill:var(--accent)}.dg .m2{fill:var(--good)}.dg .m3{fill:var(--bad)}
 .notes .lead{font-size:1rem;color:var(--muted);max-width:70ch}
 .notes h2{border-top:1px solid var(--line);padding-top:18px}
 .notes header+.lead+h2{border-top:0;padding-top:0}

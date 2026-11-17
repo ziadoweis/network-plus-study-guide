@@ -1,4 +1,5 @@
 import {H,H3,P,UL,OL,TB,EX,PRE,KEY,TRAPS} from './h.js';
+import * as F from './figs4.js';
 
 export const LESSONS=[
 /* ------------------------------------------------------------------ 17 */
@@ -20,7 +21,7 @@ TB(['Problem','What the caller hears','Fix'],[['Latency (delay)','Talking over e
 P('So voice networks use a <b>voice VLAN</b> (Lesson 11), which keeps phones separate and lets one wall port serve a phone and a PC, plus <b>QoS</b>: voice packets are marked (<b>DSCP</b> at Layer 3, <b>802.1p CoS</b> at Layer 2) and switches and routers send marked packets first. PoE powers the phones.')+
 H('Building and physical systems')+
 P('HVAC controls, lighting, physical access control (badge readers, door locks), cameras and environmental sensors are all network devices now. They belong on their own segments, managed by facilities staff with limited access to the rest of the network. Video conferencing and streaming media systems also need QoS and enough bandwidth.')+
-H('Putting it together: segmentation')+
+H('Putting it together: segmentation')+F.segment+
 EX('Worked example: segmenting a small office',TB(['Segment','VLAN','Can reach'],[['Staff PCs','10','Servers, Internet'],['Servers','30','Answer staff; updates from the Internet'],['Voice','40','Call server only, with QoS priority'],['IoT / cameras','50','Video recorder only'],['Guest Wi-Fi','60','Internet only, with client isolation']]),P('Rules between the VLANs are enforced by ACLs on the router or by a firewall. Any public-facing server goes in a <b>screened subnet</b>.'))+
 P('The same ideas apply in a <b>SOHO</b> (small office/home office) design: put guests and IoT on separate networks, never leave default passwords, and expose services only through a screened subnet or carefully chosen port forwarding.')+
 KEY('Change default credentials and isolate IoT on its own VLAN or SSID.','ICS/SCADA/OT puts availability first, is often legacy and unpatched, and needs strong segmentation or an air gap.','VoIP: SIP 5060/5061 for signaling, RTP for media.','Voice suffers from latency, jitter and loss: use a voice VLAN and QoS (DSCP, 802.1p).','Enforce segmentation with VLANs plus ACLs or firewalls.')+
@@ -65,7 +66,7 @@ UL('<b>AUP (acceptable use policy)</b>: what users may and may not do with compa
  '<b>Remote access policy</b>: who may connect from outside, and how (VPN, MFA).',
  '<b>Onboarding and offboarding</b>: give new staff the access they need, and <b>remove all access promptly</b> when someone leaves.',
  'Security, privacy and <b>DLP (data loss prevention)</b> policies.')+
-H('Incident response')+
+H('Incident response')+F.ir+
 P('When a security incident happens, a rehearsed plan prevents panic. The phases:')+
 OL('<b>Preparation</b>: plans, tools, training, contacts.','<b>Detection and identification</b>: spotting and confirming the incident.','<b>Containment</b>: stopping it from spreading, e.g. disconnecting infected machines.','<b>Eradication</b>: removing the cause (malware, compromised accounts).','<b>Recovery</b>: restoring systems and monitoring them.','<b>Lessons learned</b>: reviewing what happened and improving.')+
 P('The first responder <b>secures the scene</b> and preserves evidence, keeping a <b>chain of custody</b> record of who handled each item and when, so it can be used later. Disaster recovery (Lesson 16) covers restoring systems after major outages.')+
@@ -79,12 +80,12 @@ html:
 H('Denial of service')+
 P('A <b>denial-of-service (DoS)</b> attack attacks <b>availability</b> by overwhelming a service until it can\'t respond. A <b>DDoS</b> (distributed DoS) uses a <b>botnet</b> of thousands of compromised devices directed from a command-and-control (<b>C2</b>) server. Common forms are floods (ICMP, UDP, SYN floods, which leave many half-open TCP connections) and <b>amplification/reflection</b>: the attacker sends small queries to open DNS or NTP servers with the victim\'s address forged as the source, and the servers send much larger replies to the victim. Defenses include upstream scrubbing services from the ISP or a CDN, and rate limiting.')+
 H('Attacks on switches and local networks')+
-H3('VLAN hopping')+
+H3('VLAN hopping')+F.dbltag+
 P('VLAN hopping reaches a VLAN the attacker isn\'t assigned to. In <b>switch spoofing</b>, the attacker\'s device pretends to be a switch and negotiates a trunk using DTP, gaining access to every VLAN. In <b>double tagging</b>, the attacker sends a frame with two 802.1Q tags: the outer tag matches the trunk\'s native VLAN and is stripped by the first switch, and the inner tag then carries the frame into the target VLAN. It only works one way.',
  'Defenses: set access ports to <code>switchport mode access</code> and disable DTP (<code>switchport nonegotiate</code>), change the native VLAN to an <b>unused</b> VLAN, and never put devices in the native VLAN.')+
 H3('MAC flooding')+
 P('The attacker sends thousands of frames with fake source MACs, filling the switch\'s MAC (CAM) table. With no room left, the switch <b>floods</b> frames out of every port like a hub, so the attacker can capture other people\'s traffic. Defense: <b>port security</b>, which limits how many MAC addresses a port may learn.')+
-H3('ARP poisoning')+
+H3('ARP poisoning')+F.arp+
 P('ARP has no authentication, so an attacker can send fake ARP replies saying "the gateway\'s IP is at my MAC". Victims then send their traffic to the attacker, who reads it and passes it on: an <b>on-path attack</b>. Defense: <b>Dynamic ARP Inspection (DAI)</b>, which checks ARP messages against the DHCP snooping table of known IP-to-MAC bindings and drops forgeries.')+
 H3('Rogue DHCP and rogue devices')+
 UL('A <b>rogue DHCP server</b> hands out a gateway or DNS server controlled by the attacker, putting them on-path. Defense: <b>DHCP snooping</b>, which marks only the uplink ports facing real DHCP servers as trusted and drops DHCP server messages (Offer, Ack) arriving on any other port.',
@@ -102,7 +103,7 @@ P('Password attacks include <b>brute force</b> (trying every combination), <b>di
 H('Defenses')+
 H3('Hardening devices')+
 UL('Change default usernames and passwords.','Disable unused switch ports and put them in an unused "parking" VLAN; disable unneeded services.','Keep firmware and operating systems patched.','Use secure management protocols: SSH not Telnet, HTTPS not HTTP, SNMPv3 not v1/v2c.','Add login banners and session timeouts.')+
-H3('Network access control and 802.1X')+
+H3('Network access control and 802.1X')+F.dot1x+
 P('<b>NAC</b> decides whether a device may join the network. <b>Posture assessment</b> checks it first: patch level, antivirus, compliance. Failing devices go to a remediation VLAN until fixed.',
  '<b>802.1X</b> is port-based authentication with three roles: the <b>supplicant</b> (the client device), the <b>authenticator</b> (the switch or AP, which relays credentials and opens the port only on success), and the <b>authentication server</b> (usually RADIUS). It uses <b>EAP</b> methods: <b>EAP-TLS</b> uses certificates on both the client and the server and is the strongest; <b>PEAP</b> and <b>EAP-TTLS</b> use only a server certificate plus an encrypted tunnel for a password.')+
 H3('Port security')+
@@ -112,7 +113,7 @@ P('An access control list is processed <b>top-down</b>, and <b>the first rule th
 EX('Worked example: a shadowed rule',PRE(`1 permit ip 10.10.0.0/16 any
 2 deny   tcp 10.10.50.0/24 host 10.10.5.10 eq 1433
 (implicit deny any)`),P('The admin wanted to block the guest subnet (10.10.50.0/24) from the SQL server, but guest traffic already matches rule 1, so rule 2 is never reached: it is <b>shadowed</b>. Fix: move the specific deny above the broad permit.'))+
-H3('Zones and other controls')+
+H3('Zones and other controls')+F.screened+
 UL('Network zones: <b>trusted</b> (inside) and <b>untrusted</b> (Internet). Public-facing servers such as web, mail and DNS go in a <b>screened subnet</b> (formerly DMZ) between the outer and inner firewalls, so a compromised public server can\'t reach the internal LAN.',
  '<b>URL filtering</b> and <b>content filtering</b> block categories of websites.',
  'Other switch and router protections: storm control, control plane policing (protecting the router\'s CPU), private VLANs and client isolation.',
@@ -129,14 +130,14 @@ intro:'How you watch a network\'s health: SNMP for device data, flow records and
 html:
 H('Why monitor')+
 P('You can\'t fix what you can\'t see. Monitoring tells you a link is filling up before users complain, a switch port is throwing errors before it fails, or someone is scanning your network. It starts with a <b>baseline</b>: a record of what normal looks like, such as typical bandwidth at 10 a.m. or normal CPU load. Without a baseline you can\'t tell whether 60% utilization is a problem or just Monday morning. Alerts fire when metrics move away from the baseline.')+
-H('SNMP')+
+H('SNMP')+F.snmp+
 P('<b>SNMP</b> (Simple Network Management Protocol) is how monitoring systems collect data from routers, switches, servers and printers.')+
 UL('A central <b>manager</b>, the NMS (network management system), <b>polls</b> <b>agents</b> running on each device, asking them for values over <b>UDP 161</b>.',
  'Agents can also send unsolicited alerts called <b>traps</b> to the manager on <b>UDP 162</b>, such as "interface down". An <b>inform</b> is a trap the manager acknowledges.',
  'The data a device can report is described in its <b>MIB</b> (management information base). Each value has an <b>OID</b> (object identifier), a dotted number such as 1.3.6.1.2.1.1.5 for the device name.',
  'Operations: Get, GetNext, GetBulk (read values) and Set (change a value).')+
 TB(['Version','Security'],[['SNMPv1 / v2c','A <b>community string</b> works like a shared password and is sent in <b>clear text</b>; read-only or read-write'],['SNMPv3','Adds user accounts, <b>authentication, integrity and encryption</b>: the secure choice']])+
-H('Watching traffic')+
+H('Watching traffic')+F.tap+
 TB(['Method','What you get','Use it for'],[
  ['Flow data (NetFlow, IPFIX, sFlow)','A summary of each conversation: who talked to whom, on which ports, how much data, when. <b>No payload.</b>','Traffic analysis, finding top talkers, spotting unusual flows'],
  ['Packet capture (Wireshark, tcpdump)','<b>Full packets</b>, including the contents','Deep protocol troubleshooting'],
@@ -166,7 +167,7 @@ TRAPS('Traps go to 162; polling uses 161.','Severity 0 is the most severe, not 7
 {n:21,title:'Network Troubleshooting',obj:'5.1–5.5',book:'18, 19',
 intro:'A step-by-step method for solving network problems, how to read the symptoms of common faults, and the command-line and hardware tools you\'ll use. This is the heaviest-weighted domain on the exam.',
 html:
-H('The troubleshooting methodology')+
+H('The troubleshooting methodology')+F.method+
 P('CompTIA expects you to follow a fixed seven-step method. Questions often describe an action and ask which step it is, or ask what you should do <b>first</b> or <b>next</b>.')+
 TB(['Step','What you do'],[
  ['1. Identify the problem','Gather information; question users; identify the symptoms; <b>determine if anything has changed</b>; duplicate the problem if you can; approach multiple problems one at a time'],
@@ -178,7 +179,7 @@ TB(['Step','What you do'],[
  ['7. Document findings, actions, outcomes and lessons learned','Record it in the ticket so the next person benefits']])+
 EX('Worked example',OL('A user says "the Internet is down". You ask: since when? Anyone else affected? Anything changed? Their desk was moved yesterday. (Step 1)','Theory: a physical problem at the new desk. (Step 2)','You check the link light: it\'s off. Swapping the patch cable brings the link up. Theory confirmed. (Step 3)','Plan: replace the faulty cable and label it. (Step 4)','Replace it. (Step 5)','The user can browse, print and reach the file share. (Step 6)','Write it up in the ticket. (Step 7)'))+
 P('Practical habits: check the <b>link light</b> first; work out the scope (one user or many? one application or all?); swap to a known-good cable or port. If the problem moves with the cable, it\'s the cable. And check the internal network before blaming the ISP.')+
-H3('The four-step ping test')+
+H3('The four-step ping test')+F.ping+
 OL('<code>ping 127.0.0.1</code>: tests your own TCP/IP software stack.','Ping <b>your own IP address</b>: tests your NIC and its configuration.','Ping your <b>default gateway</b>: tests the local network.','Ping a <b>remote host</b>: tests routing beyond your network.')+
 P('Then ping by <b>name</b> (e.g. <code>ping www.example.com</code>) to test DNS. Wherever the chain breaks is where to look.')+
 H('Reading the symptoms')+

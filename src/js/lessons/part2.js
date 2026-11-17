@@ -1,4 +1,5 @@
 import {H,H3,P,UL,OL,TB,EX,PRE,KEY,TRAPS} from './h.js';
+import * as F from './figs2.js';
 
 export const LESSONS=[
 /* ------------------------------------------------------------------ 6 */
@@ -11,7 +12,7 @@ H('Binary in two minutes')+
 P('Each octet is 8 bits, and each bit position has a value: <b>128 64 32 16 8 4 2 1</b>. Add the values of the bits that are 1.')+
 EX('Worked examples',UL('<code>11000000</code> = 128 + 64 = <b>192</b>','<code>11101111</code> = 128 + 64 + 32 + 8 + 4 + 2 + 1 = <b>239</b>','<b>224</b> = 128 + 64 + 32 = <code>11100000</code>','<b>10</b> = 8 + 2 = <code>00001010</code>'))+
 P('Subnet mask octets are always a run of 1s followed by 0s, so only nine values are possible: 0, 128, 192, 224, 240, 248, 252, 254, 255. Memorise them.')+
-H('The subnet mask and CIDR')+
+H('The subnet mask and CIDR')+F.ipbits+
 P('In a subnet mask, <b>1 bits mark the network portion</b> and 0 bits mark the host portion. <code>255.255.255.0</code> is 24 ones followed by 8 zeros, so the first three octets are network and the last is host. <b>CIDR notation</b> writes the count of 1 bits after a slash: <code>192.168.10.0/24</code>.',
  'In any subnet, two addresses are reserved. The <b>network address</b> (all host bits 0) identifies the subnet itself, and the <b>broadcast address</b> (all host bits 1) reaches every host on it. Neither can be given to a device. So a subnet with <i>h</i> host bits has <b>2<sup>h</sup> − 2 usable hosts</b>.')+
 H('Address classes and special ranges')+
@@ -22,7 +23,7 @@ TB(['Range','Meaning'],[
  ['10.0.0.0/8','Private (RFC 1918)'],['172.16.0.0/12 = 172.16.0.0 – 172.31.255.255','Private'],['192.168.0.0/16','Private'],
  ['169.254.0.0/16','<b>APIPA</b> (link-local): a device gives itself one of these when it can\'t reach a DHCP server'],['127.0.0.0/8','Loopback']])+
 P('<b>Private</b> addresses can be used freely inside any organization but are <b>never routed on the Internet</b>, so a router must translate them with NAT (Lesson 7) to reach the Internet. Every other address is <b>public</b> and globally unique. When you see a <b>169.254.x.x</b> address on a PC, think "DHCP failed" straight away.')+
-H('How a host decides where to send a packet')+
+H('How a host decides where to send a packet')+F.local+
 P('Before sending, a host compares the destination IP with its own IP using its subnet mask.')+
 OL('If the destination is <b>on the same subnet</b>, the host uses <b>ARP</b> (Address Resolution Protocol) to broadcast "who has 192.168.10.20?", gets the MAC address back, and sends the frame directly.',
  'If the destination is <b>on a different subnet</b>, the host sends the frame to its <b>default gateway</b> (the local router), ARPing for the gateway\'s MAC. The router forwards it on.')+
@@ -80,7 +81,7 @@ TB(['Protocol','Type','Metric','What to know'],[
  ['OSPF','<b>Link state</b>, IGP, open standard','Cost (based on bandwidth)','Uses Dijkstra\'s SPF algorithm and hello packets; fast convergence; organises routers into <b>areas</b>, with <b>area 0</b> as the backbone. AD 110.'],
  ['EIGRP','Advanced distance vector ("hybrid"), IGP','Bandwidth and delay','Originally Cisco-only; keeps backup routes (feasible successors) for very fast failover. AD 90.'],
  ['BGP','<b>Path vector</b>, EGP','Path attributes, such as the AS path','The routing protocol of the Internet; runs between autonomous systems over TCP 179.']])+
-H('NAT: sharing public addresses')+
+H('NAT: sharing public addresses')+F.nat+
 P('Private addresses can\'t travel on the Internet, so the edge router uses <b>Network Address Translation</b> to swap them for public ones.')+
 TB(['Type','How it works','Typical use'],[
  ['Static NAT','One private address permanently mapped to one public address','Publishing an internal server to the Internet'],
@@ -91,7 +92,7 @@ EX('Worked example: PAT',P('PC1 (192.168.1.11) and PC2 (192.168.1.12) both brows
 P('<b>Port forwarding</b> is the reverse direction: the router sends incoming traffic on a chosen public port (say 443) to an inside server.')+
 H('Gateway redundancy (FHRP)')+
 P('Hosts have one default gateway configured. If that router fails, they\'re cut off. A <b>First Hop Redundancy Protocol</b> lets two or more routers share a <b>virtual IP address</b> (and virtual MAC); hosts use the virtual IP as their gateway, and if the active router fails a standby takes over within seconds, without changing anything on the hosts. <b>HSRP</b> (Cisco) uses active/standby; <b>VRRP</b> (an open standard) uses master/backup; <b>GLBP</b> (Cisco) also load-balances.')+
-H('Inter-VLAN routing with router-on-a-stick')+
+H('Inter-VLAN routing with router-on-a-stick')+F.ros+
 P('Hosts in different VLANs are on different subnets, so traffic between them must be routed. A cheap way to do it is <b>router-on-a-stick</b>: one router interface connects to a switch trunk, and is split into <b>subinterfaces</b>, one per VLAN, each with 802.1Q tagging and the VLAN\'s gateway address. Layer 3 switches do the same job faster with SVIs (Lesson 11).')+
 H('A packet\'s journey, and reading error messages')+
 OL('PC-A sees the destination is remote and sends the frame to its default gateway.','Each router strips the frame, looks up the destination in its table, decrements the TTL, and builds a new frame for the next hop.','If the TTL reaches 0, the packet is dropped and a "time exceeded" message is sent back. That prevents endless loops and is how traceroute works.')+
@@ -103,7 +104,7 @@ TRAPS('A more specific route wins even if its AD is worse.','RIP\'s maximum is 1
 {n:8,title:'TCP/IP Applications',obj:'1.4',book:'6',
 intro:'The application protocols you need to know, what each one does, the ports and transport they use, their secure replacements, and the tunneling and VPN protocols that carry other traffic.',
 html:
-H('Ports and why they matter')+
+H('Ports and why they matter')+F.socket+
 P('An IP address gets data to the right computer; a <b>port number</b> gets it to the right program. A web server listens on port 443, so a request to 203.0.113.10:443 reaches the web service. The client sends from a random temporary port, so replies come back to the right browser tab.')+
 TB(['Range','Name','Used for'],[['0–1023','Well-known','Standard server services'],['1024–49151','Registered','Vendor applications such as SQL Server and RDP'],['49152–65535','Dynamic / ephemeral','Temporary client source ports']])+
 H('The protocols and ports on the N10-009 list')+
@@ -145,7 +146,7 @@ TRAPS('Zone transfers use TCP, not UDP.','SFTP (SSH, 22) and FTPS (FTP over TLS)
 {n:9,title:'Network Naming',obj:'3.4',book:'5, 7',
 intro:'The services that make IP networks usable: DNS turns names into addresses, DHCP hands out addresses automatically, and NTP keeps every clock in step. Plus how each one fails and how to spot it.',
 html:
-H('DNS: from names to addresses')+
+H('DNS: from names to addresses')+F.dns+
 P('People type names like <code>www.example.com</code>; computers need IP addresses. The <b>Domain Name System</b> translates between them. When you look up a name, your computer checks three places in order:')+
 OL('Its local <b>DNS cache</b> (answers it got recently).','The <b>hosts file</b>, a local text file of manual name-to-IP entries.','Its configured <b>DNS server</b>, usually handed out by DHCP.')+
 P('Your DNS server performs a <b>recursive</b> lookup on your behalf: if it doesn\'t know the answer, it asks a <b>root server</b>, which points it to the <b>top-level domain</b> servers for .com, which point it to the <b>authoritative</b> server for example.com, which gives the final answer. The DNS server caches the answer for the record\'s <b>TTL</b> so the next lookup is instant.')+
@@ -168,7 +169,7 @@ UL('<b>DNSSEC</b> digitally signs DNS records so resolvers can verify that answe
  '<b>DNS over HTTPS (DoH, port 443)</b> and <b>DNS over TLS (DoT, port 853)</b> encrypt queries so others on the network can\'t see which sites you look up.')+
 P('Older Windows networks also used <b>LLMNR</b> and <b>NetBIOS</b> to resolve names on the local subnet without DNS.')+
 EX('Troubleshooting DNS',P('A user can <code>ping 8.8.8.8</code> but <code>ping www.example.com</code> fails with "could not find host". Reaching an Internet IP proves the cable, IP settings and gateway all work, so the problem is <b>DNS</b>. Check the DNS server address with <code>ipconfig /all</code>, test with <code>nslookup www.example.com</code>, and clear stale entries with <code>ipconfig /flushdns</code>.'))+
-H('DHCP: automatic addressing')+
+H('DHCP: automatic addressing')+F.dora+
 P('Configuring every device by hand doesn\'t scale. <b>DHCP</b> leases addresses automatically using four messages, remembered as <b>DORA</b>:')+
 OL('<b>Discover</b>: the client, which has no address yet, broadcasts from 0.0.0.0 to 255.255.255.255: "Is there a DHCP server?"','<b>Offer</b>: a server offers an address.','<b>Request</b>: the client asks for the offered address.','<b>Acknowledge</b>: the server confirms, and the lease begins.')+
 P('DHCP uses UDP <b>67</b> on the server and <b>68</b> on the client.')+
@@ -196,10 +197,10 @@ TRAPS('DNSSEC does not encrypt.','A reservation and an exclusion are different t
 {n:10,title:'Securing TCP/IP',obj:'4.1, 1.4',book:'20',
 intro:'The security concepts the rest of the course builds on: the CIA triad, encryption and hashing, certificates, authentication and authorization services, plus physical security, deception and compliance.',
 html:
-H('The CIA triad and core terms')+
+H('The CIA triad and core terms')+F.cia+
 P('Security aims at three goals. <b>Confidentiality</b>: only authorized people can read the data, achieved with encryption and access control. <b>Integrity</b>: data isn\'t changed without authorization, checked with hashing and digital signatures. <b>Availability</b>: systems are usable when needed, protected with redundancy, backups and DoS protection.')+
 TB(['Term','Meaning'],[['Threat','Anything that could cause harm, internal or external'],['Vulnerability','A weakness that could be exploited; public ones are catalogued as <b>CVEs</b>'],['Exploit','Code or a technique that takes advantage of a vulnerability'],['Risk','The likelihood of a threat exploiting a vulnerability × the impact'],['Zero-day','A vulnerability the vendor doesn\'t know about or hasn\'t patched yet']])+
-H('Encryption and hashing')+
+H('Encryption and hashing')+F.crypto+
 P('Data needs protecting both <b>in transit</b> (moving across a network, protected by TLS, IPsec or SSH) and <b>at rest</b> (stored on disks or in databases, protected by disk or database encryption).')+
 TB(['Method','How it works','Strengths and weaknesses'],[
  ['Symmetric encryption (AES)','The same secret key encrypts and decrypts','Fast, so used for bulk data. The challenge is sharing the key safely.'],

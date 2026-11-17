@@ -1,4 +1,5 @@
 import {H,H3,P,UL,OL,TB,EX,PRE,KEY,TRAPS} from './h.js';
+import * as F from './figs1.js';
 
 export const LESSONS=[
 /* ------------------------------------------------------------------ 1 */
@@ -8,7 +9,7 @@ html:
 H('Why networks are described in layers')+
 P('Sending a web page from a server to your laptop involves dozens of separate jobs: turning text into bits, deciding which cable or radio to use, finding the right device on the local network, finding a path across the Internet, making sure nothing is lost, and handing the data to the right program. No single protocol does all of that. Instead, networking is split into <b>layers</b>, and each layer solves one part of the problem and hands its result to the next.',
  'Layers give you two practical benefits. First, vendors can build one layer without caring about the others: an Ethernet switch works the same whether it carries web traffic or VoIP. Second, layers give you a <b>troubleshooting language</b>. "It\'s a Layer 1 problem" instantly tells a colleague you suspect the cable or port, not DNS. The exam uses this language constantly.')+
-H('The OSI model, layer by layer')+
+H('The OSI model, layer by layer')+F.osi+
 P('The <b>Open Systems Interconnection (OSI)</b> model has seven layers. Layer 1 is closest to the wire; Layer 7 is closest to the user. A handy way to remember them from the bottom up is <b>P</b>lease <b>D</b>o <b>N</b>ot <b>T</b>hrow <b>S</b>ausage <b>P</b>izza <b>A</b>way: Physical, Data Link, Network, Transport, Session, Presentation, Application.')+
 H3('Layer 1: Physical')+
 P('The Physical layer moves raw <b>bits</b>: electrical voltages on copper, pulses of light on fiber, or radio waves for Wi-Fi. It defines cables, connectors, pin-outs, signal timing and how a 1 is told apart from a 0. Devices that work only here do no thinking at all: a <b>hub</b> or <b>repeater</b> simply regenerates the signal and sends it out, and a <b>media converter</b> changes it from one medium to another (for example copper to fiber). If a cable is cut or a port is dead, you have a Layer 1 problem.')+
@@ -30,7 +31,7 @@ TB(['Layer','Name','Unit (PDU)','What it does','Examples'],[
  ['2','Data Link','Frame','MAC addressing, framing, FCS','Ethernet, 802.11, ARP; switches'],
  ['1','Physical','Bits','Signals, media, connectors','Cables, hubs, repeaters']])+
 P('ARP, which finds the MAC address that matches an IP address, sits on the border between Layers 2 and 3. Most exam questions treat it as Layer 2.')+
-H('Encapsulation: how data travels down and up the stack')+
+H('Encapsulation: how data travels down and up the stack')+F.encap+
 P('When you send data, each layer adds its own <b>header</b> (and Layer 2 also adds a trailer) in front of what the layer above gave it. This wrapping is called <b>encapsulation</b>. The receiver reverses it, <b>decapsulation</b>, removing one header at each layer until the application gets the original data.')+
 EX('Worked example: loading a web page',
  OL('Your browser creates an HTTP request (Layer 7 data). TLS encrypts it (Layer 6).',
@@ -38,16 +39,16 @@ EX('Worked example: loading a web page',
   'IP adds a header with your IP address and the server\'s IP address. Now it is a <b>packet</b>.',
   'Ethernet adds a header with your MAC address and the MAC address of your <b>default gateway</b> (because the server is on another network), plus an FCS trailer. Now it is a <b>frame</b>.',
   'The NIC turns the frame into <b>bits</b> on the wire.'))+
-H('What changes at each router hop')+
+H('What changes at each router hop')+F.hop+
 P('This is one of the most tested ideas in the whole exam. MAC addresses only matter on the local link, so <b>a frame never crosses a router</b>. When the frame reaches your router, the router strips off the Ethernet header, reads the IP header, decides where to send the packet next, <b>decrements the TTL</b> by one, and builds a <b>brand-new frame</b> with its own MAC as the source and the next device\'s MAC as the destination.',
  'The IP packet inside stays the same from end to end: the source and destination IP addresses do not change (unless NAT rewrites them, which you\'ll meet in Lesson 7). So the rule is: <b>MAC addresses change at every hop; IP addresses stay the same.</b>')+
 PRE(`Laptop ──frame 1──▶ Router A ──frame 2──▶ Router B ──frame 3──▶ Server
 MACs:  laptop→A        A→B                   B→server       (new every hop)
 IPs:   laptop→server   laptop→server         laptop→server  (unchanged)`)+
-H('The TCP/IP model')+
+H('The TCP/IP model')+F.tcpip+
 P('The OSI model is a teaching and troubleshooting reference. The protocols the Internet actually runs on follow the simpler <b>TCP/IP model</b> (also called the DoD model), which has four layers. You only need to know how they line up:')+
 TB(['TCP/IP layer','Matches OSI layers'],[['Application (Process)','5, 6 and 7'],['Host-to-Host (Transport)','4'],['Internet','3'],['Network Access (Link)','1 and 2']])+
-H('TCP and UDP')+
+H('TCP and UDP')+F.handshake+
 P('The two Transport-layer protocols trade reliability against speed.')+
 H3('TCP: connection-oriented and reliable')+
 P('Before sending data, TCP sets up a connection with the <b>three-way handshake</b>: the client sends <b>SYN</b> ("I want to talk, here is my starting sequence number"), the server replies <b>SYN/ACK</b> ("OK, and here is mine"), and the client sends <b>ACK</b>. Only then does data flow.',
@@ -65,7 +66,7 @@ TRAPS('TLS goes at Layer 6 for this exam.','"Which address changes at each hop?"
 {n:2,title:'Cabling and Topology',obj:'1.5, 1.6',book:'1, 3',
 intro:'How networks are laid out, the kinds of networks you\'ll hear about, and the copper, coax and fiber cables and connectors that carry the signal, including how to wire and choose them.',
 html:
-H('Topologies: how devices are arranged')+
+H('Topologies: how devices are arranged')+F.topo+
 P('A <b>topology</b> describes how devices are connected. The <b>physical</b> topology is how the cables actually run; the <b>logical</b> topology is how data flows. They can differ. A hub, for example, is wired as a star, but because it repeats every signal out of every port, data flows as if everyone shared one cable: a logical bus.')+
 TB(['Topology','How it\'s connected','Strengths','Weaknesses'],[
  ['Star (hub-and-spoke)','Every device connects to a central switch or hub','Easy to add devices; one bad cable affects only one device','The central device is a <b>single point of failure</b>'],
@@ -97,13 +98,13 @@ UL('<b>Plenum-rated</b> cable has a fire-resistant, low-smoke jacket. It is requ
 H('Coax and twinax')+
 UL('<b>Coaxial</b> cable has one central conductor inside insulation and a shield. <b>RG-6</b> (75 Ω) is the standard for cable TV and cable modems and uses a screw-on <b>F-type</b> connector. <b>RG-59</b> is older and thinner, for short runs. <b>BNC</b> twist-lock connectors appear on legacy 10BASE2 networks and video equipment.',
  '<b>Twinaxial</b> (twinax) has two inner conductors. In data centers it is sold as <b>DAC (direct-attach copper)</b> cables: short, cheap cables with SFP+ or QSFP modules already attached, used to connect a server to the switch at the top of its rack.')+
-H('Fiber optic cable')+
+H('Fiber optic cable')+F.fiber+
 P('Fiber carries light through a thin glass core. Because it uses light, it is <b>immune to EMI</b>, can run much further than copper, and is very hard to tap without detection. There are two kinds:')+
 TB(['','Single-mode (SMF)','Multimode (MMF)'],[['Core size','About 9 µm (tiny)','50 or 62.5 µm'],['Light source','Laser','LED or VCSEL'],['Distance','Kilometres (10, 40 km and beyond)','Up to a few hundred metres'],['Cost','Optics cost more','Cheaper optics'],['Jacket colour','Usually yellow','Orange or aqua']])+
 P('Single-mode\'s tiny core lets light travel in essentially one straight path, so the signal stays clean over long distances. Multimode\'s wider core lets light bounce along many paths, which smears the signal over distance (modal dispersion), limiting its reach.')+
 TB(['Connector','Description'],[['LC','Small form factor with a latch; the standard connector on SFP transceivers'],['SC','Square, push-pull'],['ST','Round, bayonet twist-lock (older)'],['MT-RJ','Two fibers in one small RJ-style housing'],['MPO/MTP','Many fibers in one connector, for 40/100G parallel optics']])+
 P('Fiber end faces are polished in two styles. <b>UPC</b> (usually blue) is flat. <b>APC</b> (green) is angled at 8°, which reduces light reflecting back down the fiber. <b>Never connect APC to UPC</b>: the angles don\'t meet, causing high loss and possible damage.')+
-H('Wiring standards and cable types')+
+H('Wiring standards and cable types')+F.pinout+
 P('Inside an RJ-45 plug the eight wires must be in a set order. Two standards exist: <b>T568A</b> and <b>T568B</b>. Pick one and use it consistently; T568B is the most common in businesses.')+
 TB(['Pin','1','2','3','4','5','6','7','8'],[['T568A','W/G','G','W/O','B','W/B','O','W/Br','Br'],['T568B','W/O','O','W/G','B','W/B','G','W/Br','Br']])+
 P('A <b>straight-through</b> cable has the same standard on both ends and connects <b>unlike</b> devices: a PC to a switch, or a router to a switch. A <b>crossover</b> cable has T568A on one end and T568B on the other, swapping the transmit and receive pairs (pins 1↔3 and 2↔6), and connects <b>like</b> devices: switch to switch, PC to PC, router to router. Modern ports support <b>Auto-MDI-X</b>, which detects the cable and swaps pairs automatically, so either cable usually works.',
@@ -115,7 +116,7 @@ TRAPS('Cable modems use RG-6. The quiz workbook\'s "RG-32" is not a real common 
 {n:3,title:'Ethernet Basics',obj:'1.1, 1.2',book:'4, 5',
 intro:'How Ethernet frames are built, how MAC addresses and switches work, what collision and broadcast domains are, and the main network appliances you\'ll meet: firewalls, IDS/IPS, load balancers, proxies and storage.',
 html:
-H('The Ethernet frame')+
+H('The Ethernet frame')+F.frame+
 P('Everything on a wired LAN travels inside Ethernet frames. Knowing the fields helps you read packet captures and answer questions about MTU and VLAN tags.')+
 TB(['Field','Size','Purpose'],[
  ['Preamble + SFD','8 bytes','Lets the receiver synchronize; marks the start of the frame'],
@@ -129,7 +130,7 @@ P('The largest payload a standard frame can carry is <b>1500 bytes</b>. That fig
  'If a frame arrives with a bad FCS, the receiver silently discards it and increments its <b>CRC error</b> counter. Frames smaller than 64 bytes are called <b>runts</b>; frames larger than 1518 bytes (without jumbo support) are <b>giants</b>.')+
 H('MAC addresses')+
 P('A MAC address is <b>48 bits</b>, written as 12 hex digits such as <code>0A:24:D3:00:00:FF</code> or <code>0a24.d300.00ff</code> (Cisco style). The first 24 bits are the <b>OUI (Organizationally Unique Identifier)</b>, which identifies the manufacturer; the last 24 bits are assigned by the manufacturer to make each card unique. The special address <code>FF:FF:FF:FF:FF:FF</code> is the <b>broadcast</b> MAC: every device on the LAN accepts it.')+
-H('How a switch works')+
+H('How a switch works')+F.learn+
 P('A switch has three jobs: <b>learn</b> where devices are, <b>forward or filter</b> each frame, and <b>avoid loops</b> (using Spanning Tree, Lesson 11).')+
 EX('Worked example: a switch learning',
  OL('PC-A on port 1 sends a frame to PC-C. The switch records "PC-A\'s MAC is on port 1" in its <b>MAC address table</b> (also called the CAM table).',
@@ -137,7 +138,7 @@ EX('Worked example: a switch learning',
   'PC-C replies. The switch records "PC-C is on port 3" and forwards the reply only to port 1.',
   'From now on, frames between A and C go only to the right ports. Other devices never see them.'))+
 P('Broadcasts (and frames for unknown destinations) are always flooded to every port in the VLAN. That is why a switch does not stop broadcasts.')+
-H('Collision domains and broadcast domains')+
+H('Collision domains and broadcast domains')+F.domains+
 P('Early Ethernet shared one cable among many devices. If two transmitted at once, their signals collided. Devices used <b>CSMA/CD</b> (Carrier Sense Multiple Access with Collision Detection): listen before sending, and if a collision is detected, stop and wait a random time. All devices that can collide with each other form one <b>collision domain</b>.',
  'A <b>broadcast domain</b> is the set of devices that receive each other\'s broadcasts. Only a router (or a VLAN boundary) separates broadcast domains.')+
 TB(['Device','OSI layer','Collision domains','Broadcast domains'],[['Hub / repeater','1','One shared by all ports','One'],['Switch / bridge','2','One per port','One (unless VLANs are used)'],['Router','3','One per port','One per interface']])+
@@ -166,7 +167,7 @@ TRAPS('The MTU (1500) is the payload, not the 1518-byte frame.','An IDS cannot b
 {n:4,title:'Ethernet Standards',obj:'1.5',book:'4',
 intro:'How to read Ethernet standard names, which cable or fiber each standard needs and how far it reaches, and the transceivers and multiplexing tricks that connect it all.',
 html:
-H('Reading a standard\'s name')+
+H('Reading a standard\'s name')+F.stdname+
 P('Ethernet standards follow a pattern: <b>speed + BASE + medium or reach</b>. "1000BASE-T" means 1000 Mbps, baseband signaling (one signal on the medium), over <b>T</b>wisted pair. For fiber, the last letters describe reach: <b>S</b> = short reach (multimode, 850 nm), <b>L</b> = long reach (single-mode, 1310 nm), <b>E</b> = extended reach (single-mode, 1550 nm).')+
 H('Copper standards')+
 TB(['Standard','Speed','Cable','Max distance'],[
@@ -204,7 +205,7 @@ TRAPS('Gigabit copper is 1000BASE-T (four pairs). The book\'s "1000BaseTX (two p
 {n:5,title:'Installing a Physical Network',obj:'2.4, 5.2',book:'3, 16, 18',
 intro:'How a building\'s cabling is organized, how equipment rooms are laid out, powered and protected, and the tools you\'ll use to test and troubleshoot cables.',
 html:
-H('Structured cabling')+
+H('Structured cabling')+F.cabling+
 P('Professional installs follow a <b>structured cabling</b> design so that every cable is predictable, labelled and replaceable. A signal travels: <b>work area</b> (the wall outlet at a desk) → <b>horizontal cabling</b> in the walls or ceiling, up to 90 m → a <b>telecommunications room</b> (closet) where it lands on a patch panel → <b>backbone</b> (vertical) cabling linking the closets to the main equipment room.')+
 UL('The <b>MDF (main distribution frame)</b> is the building\'s main equipment room. It usually holds the core switches, routers, servers and the <b>demarc</b>.',
  'An <b>IDF (intermediate distribution frame)</b> is a smaller closet serving one floor or area. Each IDF connects back to the MDF, often over fiber.',
