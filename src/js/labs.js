@@ -149,48 +149,52 @@ VIEWS['lab-osi']=function(el){
 };
 
 /* ---------- cables, connectors and tools ---------- */
-/* Each job is tagged with the lesson that teaches it: [job, answer, why, lesson]. */
+/* Each job is tagged with the lesson that teaches it and its kind: [job, answer, why, lesson, kind].
+   A job's dropdown only offers answers of the same kind from the same lesson, plus the distractors below. */
 const CABLE_Q=[
- ['Connect a PC to a switch port','Straight-through','Unlike devices.',2],
- ['Connect two older switches that lack Auto-MDI-X','Crossover','Like devices swap pairs 1↔3 and 2↔6.',2],
- ['Reach a new switch\'s CLI from a laptop before it has any IP','Rollover (console)','Out-of-band console access.',2],
- ['Cheapest category for new 1 Gbps desk runs','Cat 5e','The minimum for new installs; handles 1000BASE-T at 100 m.',2],
- ['10GBASE-T to a desk 90 m away','Cat 6a','Cat 6 only manages about 55 m at 10 Gbps.',2],
- ['40GBASE-T between racks 20 m apart','Cat 8','Cat 8 supports 25/40GBASE-T up to 30 m.',2],
- ['10 Gbps from a server to the top-of-rack switch, 2 m, lowest cost','DAC (twinax)','Direct-attach copper in SFP+ ports.',2],
- ['Run through the air-return space above a drop ceiling','Plenum-rated cable','Fire-resistant, low smoke.',2],
- ['Connect a cable modem to the wall outlet','RG-6 with F-type','75 Ω coax for cable broadband.',2],
- ['Connector usually found on SFP transceivers','LC connector','Small form factor, latching.',2],
- ['Green connector with an 8° polished end face','APC connector','Never mate APC with UPC (blue).',2],
- ['Link between buildings 8 km apart at 10 Gbps','Single-mode fiber + LR optics','10GBASE-LR reaches 10 km over SMF at 1310 nm.',4],
- ['200 m 10 Gbps link inside one data center','Multimode fiber + SR optics','10GBASE-SR covers about 300–400 m on OM3/OM4.',4],
- ['Two sites 35 km apart over single-mode fiber at 10 Gbps','Single-mode fiber + ER optics','10GBASE-ER reaches 40 km at 1550 nm.',4],
- ['1 Gbps over multimode fiber to a building 400 m away','1000BASE-SX optics','Multimode at 850 nm, up to about 550 m.',4],
- ['1 Gbps to a desk 80 m away over existing Cat 5e','1000BASE-T','Uses all four pairs of Cat 5e, up to 100 m.',4],
- ['Module for a 10 Gbps fiber port on a switch','SFP+ module','SFP = 1G, SFP+ = 10G, SFP28 = 25G.',4],
- ['Module for a 100 Gbps uplink','QSFP28 module','QSFP+ = 40G, QSFP28 = 100G.',4],
- ['Only one fiber strand is available, but the link must send and receive','BiDi transceiver','Sends and receives on two different wavelengths over one strand.',4],
- ['Connect a copper-only switch port to a fiber run','Media converter','Converts the signal between copper and fiber.',4],
- ['Carry dozens of 10G channels over one long-haul fiber pair','DWDM','Dense wavelength-division multiplexing packs many wavelengths onto one fiber.',4],
- ['Find which patch panel port a wall jack lands on','Toner probe','"Fox and hound".',5],
- ['Check a new patch cable\'s wire map for opens and crossed pairs','Cable tester','Continuity and pinout.',5],
- ['Prove a new run meets the Cat 6 spec for a client handoff','Certifier','Tests performance against the category standard.',5],
- ['Find how far down a copper run a break is','TDR','Time-domain reflectometer.',5],
- ['Find how far down a fiber run a break is','OTDR','Optical TDR.',5],
- ['See a fiber break or tight bend in a patch room by eye','Visual fault locator','A red laser glows at the fault.',5],
- ['Measure received optical signal level in dBm','Optical light meter','Compare against the link\'s loss budget.',5],
- ['Test whether a switch port or NIC transmits and receives','Loopback plug','It sends TX back to RX.',5],
- ['Terminate cable on a 110 block','Punchdown tool','Also used for keystone jacks.',5],
- ['Check voltage on a suspect power circuit','Multimeter','Voltage, resistance, continuity.',5],
- ['Find which channels neighboring APs use','Wi-Fi analyzer','Shows SSIDs, channels and signal strength (Lesson 14).',14]];
+ ['Connect a PC to a switch port','Straight-through','Unlike devices.',2,'wiring'],
+ ['Connect two older switches that lack Auto-MDI-X','Crossover','Like devices swap pairs 1↔3 and 2↔6.',2,'wiring'],
+ ['Reach a new switch\'s CLI from a laptop before it has any IP','Rollover (console)','Out-of-band console access.',2,'wiring'],
+ ['Cheapest category for new 1 Gbps desk runs','Cat 5e','The minimum for new installs; handles 1000BASE-T at 100 m.',2,'category'],
+ ['10GBASE-T to a desk 90 m away','Cat 6a','Cat 6 only manages about 55 m at 10 Gbps.',2,'category'],
+ ['40GBASE-T between racks 20 m apart','Cat 8','Cat 8 supports 25/40GBASE-T up to 30 m.',2,'category'],
+ ['10 Gbps from a server to the top-of-rack switch, 2 m, lowest cost','DAC (twinax)','Direct-attach copper in SFP+ ports.',2,'coax'],
+ ['Run through the air-return space above a drop ceiling','Plenum-rated cable','Fire-resistant, low smoke.',2,'jacket'],
+ ['Connect a cable modem to the wall outlet','RG-6 with F-type','75 Ω coax for cable broadband.',2,'coax'],
+ ['Connector usually found on SFP transceivers','LC connector','Small form factor, latching.',2,'connector'],
+ ['Green connector with an 8° polished end face','APC connector','Never mate APC with UPC (blue).',2,'connector'],
+ ['Link between buildings 8 km apart at 10 Gbps','Single-mode fiber + LR optics','10GBASE-LR reaches 10 km over SMF at 1310 nm.',4,'optics'],
+ ['200 m 10 Gbps link inside one data center','Multimode fiber + SR optics','10GBASE-SR covers about 300–400 m on OM3/OM4.',4,'optics'],
+ ['Two sites 35 km apart over single-mode fiber at 10 Gbps','Single-mode fiber + ER optics','10GBASE-ER reaches 40 km at 1550 nm.',4,'optics'],
+ ['1 Gbps over multimode fiber to a building 400 m away','1000BASE-SX optics','Multimode at 850 nm, up to about 550 m.',4,'optics'],
+ ['1 Gbps to a desk 80 m away over existing Cat 5e','1000BASE-T','Uses all four pairs of Cat 5e, up to 100 m.',4,'optics'],
+ ['Module for a 10 Gbps fiber port on a switch','SFP+ module','SFP = 1G, SFP+ = 10G, SFP28 = 25G.',4,'module'],
+ ['Module for a 100 Gbps uplink','QSFP28 module','QSFP+ = 40G, QSFP28 = 100G.',4,'module'],
+ ['Only one fiber strand is available, but the link must send and receive','BiDi transceiver','Sends and receives on two different wavelengths over one strand.',4,'fiberkit'],
+ ['Connect a copper-only switch port to a fiber run','Media converter','Converts the signal between copper and fiber.',4,'fiberkit'],
+ ['Carry dozens of 10G channels over one long-haul fiber pair','DWDM','Dense wavelength-division multiplexing packs many wavelengths onto one fiber.',4,'fiberkit'],
+ ['Find which patch panel port a wall jack lands on','Toner probe','"Fox and hound".',5,'tool'],
+ ['Check a new patch cable\'s wire map for opens and crossed pairs','Cable tester','Continuity and pinout.',5,'tool'],
+ ['Prove a new run meets the Cat 6 spec for a client handoff','Certifier','Tests performance against the category standard.',5,'tool'],
+ ['Find how far down a copper run a break is','TDR','Time-domain reflectometer.',5,'tool'],
+ ['Find how far down a fiber run a break is','OTDR','Optical TDR.',5,'tool'],
+ ['See a fiber break or tight bend in a patch room by eye','Visual fault locator','A red laser glows at the fault.',5,'tool'],
+ ['Measure received optical signal level in dBm','Optical light meter','Compare against the link\'s loss budget.',5,'tool'],
+ ['Test whether a switch port or NIC transmits and receives','Loopback plug','It sends TX back to RX.',5,'tool'],
+ ['Terminate cable on a 110 block','Punchdown tool','Also used for keystone jacks.',5,'tool'],
+ ['Check voltage on a suspect power circuit','Multimeter','Voltage, resistance, continuity.',5,'tool'],
+ ['Find which channels neighboring APs use','Wi-Fi analyzer','Shows SSIDs, channels and signal strength (Lesson 14).',14,'tool']];
+const CABLE_EXTRA={category:[['Cat 6',2],['Cat 7',2]],coax:[['RG-59 with BNC',2],['Cat 6a patch cable',2],['Multimode fiber patch cord',2]],jacket:[['Riser-rated cable',2],['PVC (non-plenum) cable',2]],connector:[['SC connector',2],['ST connector',2],['UPC connector',2],['MPO connector',2]],
+ optics:[['1000BASE-LX optics',4],['10GBASE-T',4]],module:[['SFP module',4],['QSFP+ module',4],['SFP28 module',4]],fiberkit:[['CWDM',4]],tool:[['Crimper',5],['Cable stripper',5]]};
+const cableOpts=(kind,set)=>[...new Set([...CABLE_Q.filter(q=>q[4]===kind&&(!set||q[3]===set)).map(q=>q[1]),...(CABLE_EXTRA[kind]||[]).filter(([,l])=>!set||l===set).map(([a])=>a)])].sort((x,y)=>x.localeCompare(y,undefined,{numeric:true}));
 export const CABLE_SETS=[[2,'Lesson 2: cables, categories and connectors'],[4,'Lesson 4: Ethernet standards, optics and transceivers'],[5,'Lesson 5: installation and test tools'],[0,'Mixed review: everything']];
 const cableQs=set=>set?CABLE_Q.filter(q=>q[3]===set):CABLE_Q;
 VIEWS['lab-cables']=function(el,opt={}){
   let set=[],cur=opt.set??(store.get('labs',{}).cables||{}).lastSet??2;
-  function render(){const pool=cableQs(cur),ans=[...new Set(pool.map(q=>q[1]))].sort();set=shuffle(pool).slice(0,10);const L=(store.get('labs',{}).cables||{}),b=(L.sets||{})[cur];
+  function render(){const pool=cableQs(cur);set=shuffle(pool).slice(0,10);const L=(store.get('labs',{}).cables||{}),b=(L.sets||{})[cur];
     el.innerHTML=`${head('Lab · Lessons 2, 4 and 5 · Obj 1.5, 5.2','Cables, connectors and tools','A performance-based-style exercise: pick the right cable, optic or tool for each job. Each set only uses what its lesson teaches; take it right after that lesson.')}
     <div class="row" style="margin-bottom:16px"><label for="cset" class="small">Set</label><select class="inp" id="cset" style="max-width:420px">${CABLE_SETS.map(([k,n])=>`<option value="${k}"${k===cur?' selected':''}>${n} (${cableQs(k).length} jobs)</option>`).join('')}</select><span class="hint small">${b==null?'Not attempted yet':'Best '+b+'%'}</span></div>
-    <div class="stack">${set.map((q,k)=>`<div class="field" id="cf${k}"><label for="cs${k}">${k+1}. ${esc(q[0])}</label><select id="cs${k}"><option value="">Choose…</option>${ans.map(a=>`<option>${esc(a)}</option>`).join('')}</select><span class="corr small"></span></div>`).join('')}</div>
+    <div class="stack">${set.map((q,k)=>`<div class="field" id="cf${k}"><label for="cs${k}">${k+1}. ${esc(q[0])}</label><select id="cs${k}"><option value="">Choose…</option>${cableOpts(q[4],cur).map(a=>`<option>${esc(a)}</option>`).join('')}</select><span class="corr small"></span></div>`).join('')}</div>
     <div class="row" style="margin-top:18px"><button class="btn" data-act="check">Check</button><button class="btn ghost" data-act="new">New round</button><span class="hint" id="cres"></span></div>`;
     el.querySelector('#cset').addEventListener('change',e=>{cur=+e.target.value;markLab('cables',{lastSet:cur});render()})}
   main.onclick=e=>{const a=e.target.closest('[data-act]');if(!a||!el.contains(a))return;if(a.dataset.act==='new')return render();
