@@ -4,9 +4,11 @@ const VIEWS={};
 export {VIEWS};
 import {PT_SETUP,PTLABS} from './pt-data.js';
 import {DEVICES} from './pt-devices.js';
-import {TOPOS} from './pt-topos.js';
+import {TOPOS,CABLING} from './pt-topos.js';
 const devicesHtml=slug=>{const d=DEVICES[slug];if(!d)return '';
-  return `<section class="ptdev"><h2>What to place in Packet Tracer</h2>${d.reuse?`<p>${d.reuse}</p>`:''}${d.place?`<div class="tw"><table><thead><tr><th>In this lab</th><th>Where in the device bar</th><th>Pick this model</th><th>Ports you\'ll use</th></tr></thead><tbody>${d.place.map(r=>`<tr><td><b>${r[0]}</b></td><td class="small">${r[1]}</td><td>${r[2]}</td><td class="small mono">${r[3]}</td></tr>`).join('')}</tbody></table></div>`:''}${d.cables?`<p class="small" style="margin-top:10px"><b>Cables</b> (Connections, the lightning-bolt icon):</p><ul class="steps small">${d.cables.map(([c,w])=>`<li>${c}: ${w}</li>`).join('')}</ul>`:''}</section>`};
+  return `<section class="ptdev"><h2>What to place in Packet Tracer</h2>${d.reuse?`<p>${d.reuse}</p>`:''}${d.place?`<div class="tw"><table><thead><tr><th>In this lab</th><th>Where in the device bar</th><th>Pick this model</th><th>Ports you\'ll use</th></tr></thead><tbody>${d.place.map(r=>`<tr><td><b>${r[0]}</b></td><td class="small">${r[1]}</td><td>${r[2]}</td><td class="small mono">${r[3]}</td></tr>`).join('')}</tbody></table></div>`:''}${cablingHtml(slug)}</section>`};
+const cablingHtml=slug=>{const c=CABLING[slug];if(!c||!c.length)return '';
+  return `<h3>How to cable it</h3><p class="small">Pick each cable from <b>Connections</b> (the lightning-bolt icon), click the first device and choose its port, then click the second device and choose its port.</p><div class="tw"><table><thead><tr><th>From</th><th>Port</th><th>To</th><th>Port</th><th>Cable</th></tr></thead><tbody>${c.map(l=>`<tr><td><b>${l.from}</b></td><td class="mono">${l.fp}</td><td><b>${l.to}</b></td><td class="mono">${l.tp}</td><td class="small">${l.cable}${l.note?`<br><span class="muted">${l.note}</span>`:''}</td></tr>`).join('')}</tbody></table></div>`};
 /* ---------- Packet Tracer views ---------- */
 VIEWS.pt=function(el){
   const done=store.get('pt',{});

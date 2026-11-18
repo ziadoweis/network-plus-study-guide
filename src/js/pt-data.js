@@ -118,7 +118,7 @@ ${TB(['Device','Port','VLAN','IPv4 / mask','Gateway'],[['PC1','SW1 Fa0/1','10 SA
 ${NOTE('The gateways (.1) don\'t exist yet. The router arrives in the next lab, so cross-VLAN pings are supposed to fail here.')}
 <h3>Part 1: Build</h3>
 <ol class="steps">
-<li>Place two 2960 switches (SW1, SW2) and four PCs. Connect the PCs with <b>straight-through</b> cables as shown.</li>
+<li>Place two 2960 switches (SW1, SW2) and four PCs. Cable them port to port as in the <b>How to cable it</b> table above. Connect the PCs with <b>straight-through</b> cables as shown.</li>
 <li>Connect SW1 <b>Gi0/1</b> to SW2 <b>Gi0/1</b> with a <b>Copper Cross-Over</b> cable (switch to switch = like devices).</li>
 <li>Give each PC its static address and gateway from the table.</li>
 </ol>
@@ -293,7 +293,7 @@ interface g0/0.20
 ${TB(['Device','Interface','Address'],[['R1','G0/0','172.16.1.1 /24'],['R1','G0/1','10.0.12.1 /30'],['R2','G0/1','10.0.12.2 /30'],['R2','G0/2','10.0.23.1 /30'],['R3','G0/1','10.0.23.2 /30'],['R3','G0/0','172.16.3.1 /24'],['PC-A','NIC','172.16.1.10 /24, gateway 172.16.1.1'],['PC-C','NIC','172.16.3.10 /24, gateway 172.16.3.1']])}
 <h3>Part 1: Build and address</h3>
 <ol class="steps">
-<li>Place three 2911 routers (R1, R2, R3), two 2960 switches (SW-A, SW-C) and two PCs (PC-A, PC-C). Router ↔ router links use <b>cross-over</b>; router → switch and PC → switch use <b>straight-through</b>.</li>
+<li>Place three 2911 routers (R1, R2, R3), two 2960 switches (SW-A, SW-C) and two PCs (PC-A, PC-C). Cable them port to port as in the <b>How to cable it</b> table above. Router ↔ router links use <b>cross-over</b>; router → switch and PC → switch use <b>straight-through</b>.</li>
 <li>Configure each router's interfaces. Example for R1 (R2 and R3 follow the table):</li>
 </ol>
 ${C('R1',`
@@ -409,7 +409,7 @@ ${TB(['Experiment','Do this','What you should see'],[
 ${TB(['Device','Interface','Address'],[['R1','G0/0 (inside)','192.168.1.1 /24'],['R1','G0/1 (outside)','203.0.113.2 /29'],['ISP','G0/1','203.0.113.1 /29'],['ISP','G0/0','198.51.100.1 /24'],['PC1 / PC2','NIC','192.168.1.11 and .12 /24, gateway 192.168.1.1'],['Web-In (server)','NIC','192.168.1.100 /24, gateway 192.168.1.1'],['Web-Out (server)','NIC','198.51.100.10 /24, gateway 198.51.100.1'],['PC-Out','NIC','198.51.100.20 /24, gateway 198.51.100.1']])}
 <h3>Part 1: Build</h3>
 <ol class="steps">
-<li>Place two 2911 routers (R1, ISP), two 2960 switches (SW1, SW2), three PCs (PC1 and PC2 inside, PC-Out outside) and two Servers (Web-In, Web-Out). R1 G0/1 ↔ ISP G0/1 is a <b>cross-over</b> cable.</li>
+<li>Place two 2911 routers (R1, ISP), two 2960 switches (SW1, SW2), three PCs (PC1 and PC2 inside, PC-Out outside) and two Servers (Web-In, Web-Out). Cable them port to port as in the <b>How to cable it</b> table above. R1 G0/1 ↔ ISP G0/1 is a <b>cross-over</b> cable.</li>
 <li>Address the interfaces from the table and give R1 a default route: <code>ip route 0.0.0.0 0.0.0.0 203.0.113.1</code>. Give the ISP router <b>no</b> route to 192.168.1.0. ISPs never route RFC 1918 space.</li>
 <li>Test from PC1: <code>ping 198.51.100.10</code> → "Request timed out". The packet gets there, but Web-Out's reply has nowhere to go. That's why NAT exists.</li>
 </ol>
@@ -458,7 +458,7 @@ ${NOTE('If the page doesn\'t load, add a host route on the ISP router so it know
 </ol>
 <h3>Part 1: Build and confirm everything is open</h3>
 <ol class="steps">
-<li>Place one 2911 (R1), three 2960 switches (SW-IN, SW-GUEST, SW-SCR), two PCs (PC-Staff, PC-Guest) and two Servers (Server-HR, Server-Web). Configure R1's three interfaces (with <code>no shutdown</code>) and give every host its gateway (.1 in its subnet).</li>
+<li>Place one 2911 (R1), three 2960 switches (SW-IN, SW-GUEST, SW-SCR), two PCs (PC-Staff, PC-Guest) and two Servers (Server-HR, Server-Web). Cable them port to port as in the <b>How to cable it</b> table above. Configure R1's three interfaces (with <code>no shutdown</code>) and give every host its gateway (.1 in its subnet).</li>
 <li>HTTP is on by default on PT servers. Before adding any ACLs, confirm PC-Guest can ping and browse both servers. Write down what works.</li>
 </ol>
 <h3>Part 2: Write and apply the ACLs</h3>
@@ -505,7 +505,7 @@ show access-lists GUEST-IN`)}
  goal:'Run the services every network depends on, point a router at them, and recreate the classic "works by IP, fails by name" ticket.',
  body:()=>`
 <h3>Part 1: Build and DHCP</h3>
-<ol class="steps"><li>Place R1 (2911), SW1 (2960), two PCs and two Servers (Server-Core, Server-Web). Set the servers' static addresses (gateway 192.168.1.1). Configure R1:</li></ol>
+<ol class="steps"><li>Place R1 (2911), SW1 (2960), two PCs and two Servers (Server-Core, Server-Web). Cable them port to port as in the <b>How to cable it</b> table above. Set the servers' static addresses (gateway 192.168.1.1). Configure R1:</li></ol>
 ${C('R1',`
 enable
 configure terminal
