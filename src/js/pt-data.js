@@ -13,6 +13,15 @@ export const PT_SETUP=`
 <li>Click any device to open it. Routers and switches have <b>Physical</b>, <b>Config</b> and <b>CLI</b> tabs; use the <b>CLI</b> tab for every command in these labs. PCs and servers have a <b>Desktop</b> tab (IP Configuration, Command Prompt, Web Browser, Terminal) and a <b>Services</b> tab on servers.</li>
 <li>Save often (File → Save As) and keep one .pkt file per lab. Several labs build on the previous file.</li>
 </ol>
+<h3>Pick the exact models</h3>
+<p>Every lab starts with a <b>What to place</b> table listing each device, where it is in the device bar and which model to drag in. Hover over an icon to see its model name. The labs use these five models throughout:</p>
+${TB(['Model to pick','Where','Why this one'],[
+ ['<b>2911</b> router','Network Devices → Routers','Has three Gigabit ports, G0/0, G0/1 and G0/2, which the labs use. The 1941 and 2901 have only two; the 4331 names its ports G0/0/0, so commands from the labs won\'t match.'],
+ ['<b>2960</b> switch (2960-24TT, labelled 2960 IOS15 in some versions)','Network Devices → Switches','24 FastEthernet ports (Fa0/1–24) plus Gi0/1–2, and supports every switch command in the labs. Avoid the generic Switch-PT and the older 2950.'],
+ ['<b>PC</b>, <b>Laptop</b>, <b>Server</b>','End Devices → End Devices','The generic PC-PT, Laptop-PT and Server-PT. Servers have the Services tab (DHCP, DNS, HTTP, NTP, SYSLOG, AAA).'],
+ ['<b>WRT300N</b> wireless router','Network Devices → Wireless Devices','The home/SOHO wireless router with a web GUI, used in lab 9.'],
+ ['<b>Tablet</b> (TabletPC-PT)','End Devices → End Devices','A Wi-Fi-only client for lab 9. Some versions label it Wireless Tablet.']])}
+<p class="note">Names are from Packet Tracer 8.2. If your version labels an icon slightly differently, match the model number (2911, 2960, WRT300N). To name a device the way the lab does, click it → Config tab → Display Name, and set the hostname in the CLI too.</p>
 <h3>Which cable to use</h3>
 ${TB(['Connection','Packet Tracer cable','Why'],[
  ['PC / server / router → switch','Copper Straight-Through','Unlike devices (MDI ↔ MDI-X)'],
@@ -184,7 +193,7 @@ ${TB(['Experiment','Do this','What you should see','Undo'],[
  ['Native VLAN mismatch','SW2: <code>interface gi0/1</code> → <code>switchport trunk native vlan 1</code>','After about a minute both consoles log <code>%CDP-4-NATIVE_VLAN_MISMATCH</code>, and SW1 can no longer ping 192.168.99.3','<code>switchport trunk native vlan 99</code>'],
  ['VLAN pruned from trunk','SW1: <code>interface gi0/1</code> → <code>switchport trunk allowed vlan 10,99</code>','PC2 → PC4 fails, PC1 → PC3 still works. <code>show interfaces trunk</code> shows the allowed list.','<code>switchport trunk allowed vlan 10,20,99</code>'],
  ['Port in the wrong VLAN','SW2: <code>interface fa0/1</code> → <code>switchport access vlan 20</code>','PC3 can no longer reach PC1, though its IP settings haven\'t changed. This is a classic "it worked before the desk move" ticket.','<code>switchport access vlan 10</code>']])}
-<p>Save as <b>pt2-vlans.pkt</b>. The next lab builds on it.</p>`,
+<p>Save as <b>pt6-vlans.pkt</b>. The next lab builds on it.</p>`,
  qs:[['How many broadcast domains do the VLANs create?','One per VLAN: 1, 10, 20, 99 and 999 are five separate broadcast domains, although only 10, 20 and 99 carry traffic here.'],
   ['Why does PC1 → PC2 fail even though both are on the same switch?','They are in different VLANs and subnets. Traffic between VLANs must be routed at Layer 3.'],
   ['Which three settings in this lab defend against VLAN hopping? (Obj 4.2/4.3)','Static access mode (no DTP on access ports), nonegotiate on the trunk, and a native VLAN that isn\'t VLAN 1 and has no hosts in it.'],
@@ -203,7 +212,7 @@ ${TOPO(`                     R1 (2911)
 ${TB(['Interface','VLAN','Address'],[['R1 G0/0.10','10','192.168.10.1 /24'],['R1 G0/0.20','20','192.168.20.1 /24'],['R1 G0/0.99','99 (native)','192.168.99.1 /24'],['Server-DHCP (Part 4)','99','192.168.99.10 /24, gateway 192.168.99.1']])}
 <h3>Part 1: Add the router</h3>
 <ol class="steps">
-<li>Open <b>pt2-vlans.pkt</b> and Save As <b>pt3-intervlan.pkt</b>.</li>
+<li>Open <b>pt6-vlans.pkt</b> and Save As <b>pt7-intervlan.pkt</b>.</li>
 <li>Add a <b>2911</b> router named R1. Connect R1 <b>G0/0</b> to SW1 <b>Gi0/2</b> with a <b>straight-through</b> cable.</li>
 <li>Turn SW1 Gi0/2 into a trunk (it was parked in the last lab):</li>
 </ol>
@@ -303,7 +312,7 @@ ${TOPO(`PC-A ─ SW-A ─ G0/0 R1 G0/1 ──10.0.12.0/30── G0/1 R2 G0/2 ─
 ${TB(['Device','Interface','Address'],[['R1','G0/0','172.16.1.1 /24'],['R1','G0/1','10.0.12.1 /30'],['R2','G0/1','10.0.12.2 /30'],['R2','G0/2','10.0.23.1 /30'],['R3','G0/1','10.0.23.2 /30'],['R3','G0/0','172.16.3.1 /24'],['PC-A','NIC','172.16.1.10 /24, gateway 172.16.1.1'],['PC-C','NIC','172.16.3.10 /24, gateway 172.16.3.1']])}
 <h3>Part 1: Build and address</h3>
 <ol class="steps">
-<li>Place three 2911 routers, two 2960 switches and two PCs. Router ↔ router links use <b>cross-over</b>; router → switch and PC → switch use <b>straight-through</b>.</li>
+<li>Place three 2911 routers (R1, R2, R3), two 2960 switches (SW-A, SW-C) and two PCs (PC-A, PC-C). Router ↔ router links use <b>cross-over</b>; router → switch and PC → switch use <b>straight-through</b>.</li>
 <li>Configure each router's interfaces. Example for R1 (R2 and R3 follow the table):</li>
 </ol>
 ${C('R1',`
@@ -348,7 +357,7 @@ end`)}
 </ol>
 <h3>Part 4: Longest prefix match</h3>
 <ol class="steps"><li>On R1 add <code>ip route 172.16.3.0 255.255.255.0 10.0.12.2</code>. <code>show ip route</code> now has both the default and the /24. Traffic to 172.16.3.10 uses the /24 because the most specific route always wins, before AD is considered. Remove it with <code>no ip route 172.16.3.0 255.255.255.0 10.0.12.2</code>.</li></ol>
-<p>Save as <b>pt4-static.pkt</b>. The next lab builds on it.</p>`,
+<p>Save as <b>pt2-static.pkt</b>. The next lab builds on it.</p>`,
  qs:[['Why can R1 and R3 use a default route but R2 cannot?','R1 and R3 are stub routers with a single way out. R2 sits in the middle and must know which side each LAN is on, so it needs specific routes (or a default to one side plus a specific route to the other).'],
   ['"Destination host unreachable" from 172.16.1.1 vs "Request timed out": what does each tell you?','Unreachable from a router means that router has no route for the destination. A timeout means no answer came back at all: often a missing return route, a filter, or a host that\'s down.'],
   ['What does [1/0] mean in a static route entry?','Administrative distance 1 (static) and metric 0.']]},
@@ -364,7 +373,7 @@ PC-A ─ R1 (1.1.1.1) ──10.0.13.0/30── R3 (3.3.3.3) ─ PC-C
    172.16.1.0/24                      172.16.3.0/24`)}
 <h3>Part 1: Prepare</h3>
 <ol class="steps">
-<li>Open <b>pt4-static.pkt</b> and Save As <b>pt5-ospf.pkt</b>.</li>
+<li>Open <b>pt2-static.pkt</b> and Save As <b>pt3-ospf.pkt</b>.</li>
 <li>Remove the static routes: R1 <code>no ip route 0.0.0.0 0.0.0.0 10.0.12.2</code>; R2 <code>no ip route 172.16.1.0 255.255.255.0 10.0.12.1</code> and <code>no ip route 172.16.3.0 255.255.255.0 10.0.23.2</code>; R3 <code>no ip route 0.0.0.0 0.0.0.0 10.0.23.1</code>.</li>
 <li>Add a <b>cross-over</b> cable from R1 <b>G0/2</b> to R3 <b>G0/2</b>. Address it: R1 G0/2 10.0.13.1/30, R3 G0/2 10.0.13.2/30 (remember <code>no shutdown</code>).</li>
 <li>On R2, add a loopback to stand in for a server network: <code>interface loopback0</code> → <code>ip address 2.2.2.2 255.255.255.255</code>.</li>
@@ -429,7 +438,7 @@ Web-In ┘  192.168.1.0/24                                                   └
 ${TB(['Device','Interface','Address'],[['R1','G0/0 (inside)','192.168.1.1 /24'],['R1','G0/1 (outside)','203.0.113.2 /29'],['ISP','G0/1','203.0.113.1 /29'],['ISP','G0/0','198.51.100.1 /24'],['PC1 / PC2','NIC','192.168.1.11 and .12 /24, gateway 192.168.1.1'],['Web-In (server)','NIC','192.168.1.100 /24, gateway 192.168.1.1'],['Web-Out (server)','NIC','198.51.100.10 /24, gateway 198.51.100.1'],['PC-Out','NIC','198.51.100.20 /24, gateway 198.51.100.1']])}
 <h3>Part 1: Build</h3>
 <ol class="steps">
-<li>Place two 2911 routers (R1, ISP), two switches, two PCs inside, PC-Out, and two servers. R1 G0/1 ↔ ISP G0/1 is a <b>cross-over</b> cable.</li>
+<li>Place two 2911 routers (R1, ISP), two 2960 switches (SW1, SW2), three PCs (PC1 and PC2 inside, PC-Out outside) and two Servers (Web-In, Web-Out). R1 G0/1 ↔ ISP G0/1 is a <b>cross-over</b> cable.</li>
 <li>Address the interfaces from the table and give R1 a default route: <code>ip route 0.0.0.0 0.0.0.0 203.0.113.1</code>. Give the ISP router <b>no</b> route to 192.168.1.0. ISPs never route RFC 1918 space.</li>
 <li>Test from PC1: <code>ping 198.51.100.10</code> → "Request timed out". The packet gets there, but Web-Out's reply has nowhere to go. That's why NAT exists.</li>
 </ol>
@@ -481,7 +490,7 @@ ${TOPO(`                 G0/0 192.168.10.1 ── SW-IN ──── PC-Staff 19
 </ol>
 <h3>Part 1: Build and confirm everything is open</h3>
 <ol class="steps">
-<li>Place one 2911, three switches, two PCs and two servers. Configure R1's three interfaces (with <code>no shutdown</code>) and give every host its gateway (.1 in its subnet).</li>
+<li>Place one 2911 (R1), three 2960 switches (SW-IN, SW-GUEST, SW-SCR), two PCs (PC-Staff, PC-Guest) and two Servers (Server-HR, Server-Web). Configure R1's three interfaces (with <code>no shutdown</code>) and give every host its gateway (.1 in its subnet).</li>
 <li>HTTP is on by default on PT servers. Before adding any ACLs, confirm PC-Guest can ping and browse both servers. Write down what works.</li>
 </ol>
 <h3>Part 2: Write and apply the ACLs</h3>
@@ -533,7 +542,7 @@ Server-Core ─────┼─ SW1 ─ G0/0 R1 (192.168.1.1)
 Server-Web ──────┘
 192.168.1.20`)}
 <h3>Part 1: Build and DHCP</h3>
-<ol class="steps"><li>Place R1 (2911), SW1, two PCs and two servers. Set the servers' static addresses (gateway 192.168.1.1). Configure R1:</li></ol>
+<ol class="steps"><li>Place R1 (2911), SW1 (2960), two PCs and two Servers (Server-Core, Server-Web). Set the servers' static addresses (gateway 192.168.1.1). Configure R1:</li></ol>
 ${C('R1',`
 enable
 configure terminal
@@ -808,7 +817,7 @@ interface g0/0
  goal:'Practice the troubleshooting methodology on your own network. Read each symptom, predict the cause and the command that proves it, then recreate the fault to check yourself.',
  body:()=>`
 <ol class="steps">
-<li>Open <b>pt3-intervlan.pkt</b> (with router DHCP from Part 3, or the relay from Part 4) and Save As <b>pt-breakfix.pkt</b>.</li>
+<li>Open <b>pt7-intervlan.pkt</b> (with router DHCP from Part 3, or the relay from Part 4) and Save As <b>pt12-breakfix.pkt</b>.</li>
 <li>For each ticket: read only the symptom, then write down (1) your theory, (2) the command that would prove it, (3) the fix. Open the answer only after that.</li>
 <li>Then apply the fault yourself, confirm the symptom matches, use your command to prove it, fix it, and verify. That's methodology steps 2 → 6.</li>
 <li>Even better: ask a coworker to apply a fault without telling you which one.</li>
