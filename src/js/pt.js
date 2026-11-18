@@ -4,6 +4,7 @@ const VIEWS={};
 export {VIEWS};
 import {PT_SETUP,PTLABS} from './pt-data.js';
 import {DEVICES} from './pt-devices.js';
+import {TOPOS} from './pt-topos.js';
 const devicesHtml=slug=>{const d=DEVICES[slug];if(!d)return '';
   return `<section class="ptdev"><h2>What to place in Packet Tracer</h2>${d.reuse?`<p>${d.reuse}</p>`:''}${d.place?`<div class="tw"><table><thead><tr><th>In this lab</th><th>Where in the device bar</th><th>Pick this model</th><th>Ports you\'ll use</th></tr></thead><tbody>${d.place.map(r=>`<tr><td><b>${r[0]}</b></td><td class="small">${r[1]}</td><td>${r[2]}</td><td class="small mono">${r[3]}</td></tr>`).join('')}</tbody></table></div>`:''}${d.cables?`<p class="small" style="margin-top:10px"><b>Cables</b> (Connections, the lightning-bolt icon):</p><ul class="steps small">${d.cables.map(([c,w])=>`<li>${c}: ${w}</li>`).join('')}</ul>`:''}</section>`};
 /* ---------- Packet Tracer views ---------- */
@@ -18,6 +19,7 @@ function ptView(slug){return function(el){
   const prev=PTLABS[idx-1],next=PTLABS[idx+1];
   el.innerHTML=`<article class="lab"><div class="labhead"><p class="eyebrow">Packet Tracer lab ${idx+1} of ${PTLABS.length} · ${p.after==='F'?'final review':'after Lesson '+p.after}</p><h1>${p.title}</h1>
   <p class="meta">${p.obj.map(o=>objTag(o)).join('  ·  ')}  ·  ${p.time}</p><p class="lede">${p.goal}</p></div>
+  ${TOPOS[slug]?`<h2>Topology</h2>${TOPOS[slug]}`:''}
   ${devicesHtml(slug)}
   ${p.body()}
   <h2>Check your understanding</h2><div class="qa">${p.qs.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</div>

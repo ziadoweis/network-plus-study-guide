@@ -3,7 +3,6 @@ import {esc} from './util.js';
 const C=(dev,code)=>`<div class="cmd"><div class="cmdh"><span>${dev}</span><button type="button" class="copy" data-copy>Copy</button></div><pre>${esc(code.trim())}</pre></div>`;
 const TB=(head,rows)=>`<div class="tw"><table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 const NOTE=t=>`<p class="note">${t}</p>`;
-const TOPO=t=>`<pre class="topo">${esc(t)}</pre>`;
 
 export const PT_SETUP=`
 <h2>Before you start</h2>
@@ -41,10 +40,6 @@ const RAW=[
 {slug:'pt-first-lan',title:'Your first LAN and a hardened switch',obj:['1.1','1.5','3.5','4.3'],time:'60–75 min',
  goal:'Cable a small LAN, watch ARP and ICMP move through a switch in Simulation mode, then secure the switch with passwords and SSH.',
  body:()=>`
-${TOPO(` PC1 ─Fa0─────Fa0/1─┐
- PC2 ─Fa0─────Fa0/2─┤  SW1 (2960-24TT)    management IP on VLAN 1: 192.168.1.2/24
- PC3 ─Fa0─────Fa0/3─┘
- PC1 RS-232 ── console cable ── SW1 Console`)}
 ${TB(['Device','Interface','IPv4 address','Mask','Gateway'],[['SW1','VLAN 1','192.168.1.2','255.255.255.0','none'],['PC1','NIC','192.168.1.11','255.255.255.0','none'],['PC2','NIC','192.168.1.12','255.255.255.0','none'],['PC3','NIC','192.168.1.13','255.255.255.0','none']])}
 <h3>Part 1: Build and cable</h3>
 <ol class="steps">
@@ -119,11 +114,6 @@ copy running-config startup-config`)}
 {slug:'pt-vlans',title:'VLANs and 802.1Q trunks across two switches',obj:['2.2','4.2','5.3'],time:'60–90 min',
  goal:'Split users into VLANs, carry them between switches on a trunk, harden the trunk, and see how VLAN mistakes look from the user\'s side.',
  body:()=>`
-${TOPO(`              Gi0/1  802.1Q trunk (native VLAN 99)  Gi0/1
-        SW1 ──────────────────────────────────────── SW2
-      Fa0/1     Fa0/11                          Fa0/1     Fa0/11
-       PC1       PC2                             PC3       PC4
-     VLAN 10   VLAN 20                         VLAN 10   VLAN 20`)}
 ${TB(['Device','Port','VLAN','IPv4 / mask','Gateway'],[['PC1','SW1 Fa0/1','10 SALES','192.168.10.11 /24','192.168.10.1'],['PC2','SW1 Fa0/11','20 HR','192.168.20.11 /24','192.168.20.1'],['PC3','SW2 Fa0/1','10 SALES','192.168.10.12 /24','192.168.10.1'],['PC4','SW2 Fa0/11','20 HR','192.168.20.12 /24','192.168.20.1'],['SW1','VLAN 99 SVI','99 MGMT','192.168.99.2 /24','192.168.99.1'],['SW2','VLAN 99 SVI','99 MGMT','192.168.99.3 /24','192.168.99.1']])}
 ${NOTE('The gateways (.1) don\'t exist yet. The router arrives in the next lab, so cross-VLAN pings are supposed to fail here.')}
 <h3>Part 1: Build</h3>
@@ -202,13 +192,6 @@ ${TB(['Experiment','Do this','What you should see','Undo'],[
 {slug:'pt-intervlan-dhcp',title:'Inter-VLAN routing (router-on-a-stick) and DHCP',obj:['2.1','2.2','3.4'],time:'60–90 min',
  goal:'Add a router that routes between the VLANs from the last lab, serve addresses with DHCP, then move DHCP to a server and use a relay.',
  body:()=>`
-${TOPO(`                     R1 (2911)
-                     G0/0  subinterfaces .10 / .20 / .99
-                      │  802.1Q trunk
-          Gi0/2 ──────┘
-        SW1 ─────────Gi0/1 trunk──────── SW2
-      PC1   PC2                         PC3   PC4
-     (V10) (V20)                       (V10) (V20)        Server-DHCP on SW1 Fa0/24 (VLAN 99) in Part 4`)}
 ${TB(['Interface','VLAN','Address'],[['R1 G0/0.10','10','192.168.10.1 /24'],['R1 G0/0.20','20','192.168.20.1 /24'],['R1 G0/0.99','99 (native)','192.168.99.1 /24'],['Server-DHCP (Part 4)','99','192.168.99.10 /24, gateway 192.168.99.1']])}
 <h3>Part 1: Add the router</h3>
 <ol class="steps">
@@ -307,8 +290,6 @@ interface g0/0.20
 {slug:'pt-static-routing',title:'Static and default routing across three routers',obj:['2.1','5.3'],time:'45–60 min',
  goal:'Route between two LANs through a transit router with static and default routes, and learn the difference between "destination host unreachable" and "request timed out".',
  body:()=>`
-${TOPO(`PC-A ─ SW-A ─ G0/0 R1 G0/1 ──10.0.12.0/30── G0/1 R2 G0/2 ──10.0.23.0/30── G0/1 R3 G0/0 ─ SW-C ─ PC-C
-     172.16.1.0/24                                                                  172.16.3.0/24`)}
 ${TB(['Device','Interface','Address'],[['R1','G0/0','172.16.1.1 /24'],['R1','G0/1','10.0.12.1 /30'],['R2','G0/1','10.0.12.2 /30'],['R2','G0/2','10.0.23.1 /30'],['R3','G0/1','10.0.23.2 /30'],['R3','G0/0','172.16.3.1 /24'],['PC-A','NIC','172.16.1.10 /24, gateway 172.16.1.1'],['PC-C','NIC','172.16.3.10 /24, gateway 172.16.3.1']])}
 <h3>Part 1: Build and address</h3>
 <ol class="steps">
@@ -365,12 +346,6 @@ end`)}
 {slug:'pt-ospf',title:'OSPF: dynamic routing, failover and administrative distance',obj:['2.1'],time:'60 min',
  goal:'Replace static routes with single-area OSPF, watch it reroute around a failed link, and see a static route override OSPF because of AD.',
  body:()=>`
-${TOPO(`                 R2 (2.2.2.2)
-               ╱            ╲
-     10.0.12.0/30          10.0.23.0/30
-             ╱                ╲
-PC-A ─ R1 (1.1.1.1) ──10.0.13.0/30── R3 (3.3.3.3) ─ PC-C
-   172.16.1.0/24                      172.16.3.0/24`)}
 <h3>Part 1: Prepare</h3>
 <ol class="steps">
 <li>Open <b>pt2-static.pkt</b> and Save As <b>pt3-ospf.pkt</b>.</li>
@@ -431,10 +406,6 @@ ${TB(['Experiment','Do this','What you should see'],[
 {slug:'pt-nat',title:'NAT and PAT to an ISP',obj:['2.1','1.7'],time:'45–60 min',
  goal:'Give a private LAN Internet access with PAT, publish an inside web server with static NAT, and read a NAT translation table.',
  body:()=>`
-${TOPO(`PC1 ─┐                                203.0.113.0/29
-PC2 ─┼─ SW1 ─ G0/0 R1 G0/1 ────────────────────────── G0/1 ISP G0/0 ─ SW2 ─┬─ Web-Out 198.51.100.10
-Web-In ┘  192.168.1.0/24                                                   └─ PC-Out  198.51.100.20
-192.168.1.100`)}
 ${TB(['Device','Interface','Address'],[['R1','G0/0 (inside)','192.168.1.1 /24'],['R1','G0/1 (outside)','203.0.113.2 /29'],['ISP','G0/1','203.0.113.1 /29'],['ISP','G0/0','198.51.100.1 /24'],['PC1 / PC2','NIC','192.168.1.11 and .12 /24, gateway 192.168.1.1'],['Web-In (server)','NIC','192.168.1.100 /24, gateway 192.168.1.1'],['Web-Out (server)','NIC','198.51.100.10 /24, gateway 198.51.100.1'],['PC-Out','NIC','198.51.100.20 /24, gateway 198.51.100.1']])}
 <h3>Part 1: Build</h3>
 <ol class="steps">
@@ -479,9 +450,6 @@ ${NOTE('If the page doesn\'t load, add a host route on the ISP router so it know
 {slug:'pt-acl',title:'ACLs and a screened subnet',obj:['4.3','4.1','5.3'],time:'60–75 min',
  goal:'Build a three-zone network (inside, guest, screened subnet) and enforce a written policy with extended ACLs. Then prove the rule order matters.',
  body:()=>`
-${TOPO(`                 G0/0 192.168.10.1 ── SW-IN ──── PC-Staff 192.168.10.10, Server-HR 192.168.10.100
-  R1 (2911) ──── G0/1 192.168.50.1 ── SW-GUEST ─ PC-Guest 192.168.50.10
-                 G0/2 172.16.100.1 ── SW-SCR ─── Server-Web 172.16.100.10   (screened subnet)`)}
 <h3>Policy to enforce</h3>
 <ol class="steps">
 <li>Guests may reach the web server in the screened subnet on HTTP/HTTPS only. They may not reach the inside LAN at all.</li>
@@ -536,11 +504,6 @@ show access-lists GUEST-IN`)}
 {slug:'pt-services',title:'Network services: DNS, HTTP, NTP, syslog and SNMP',obj:['3.4','3.2','5.3'],time:'60 min',
  goal:'Run the services every network depends on, point a router at them, and recreate the classic "works by IP, fails by name" ticket.',
  body:()=>`
-${TOPO(`PC1, PC2 (DHCP) ─┐
-Server-Core ─────┼─ SW1 ─ G0/0 R1 (192.168.1.1)
-192.168.1.10     │
-Server-Web ──────┘
-192.168.1.20`)}
 <h3>Part 1: Build and DHCP</h3>
 <ol class="steps"><li>Place R1 (2911), SW1 (2960), two PCs and two Servers (Server-Core, Server-Web). Set the servers' static addresses (gateway 192.168.1.1). Configure R1:</li></ol>
 ${C('R1',`
@@ -612,14 +575,6 @@ end`)}
 {slug:'pt-switch-security',title:'Switch security: DHCP snooping, port security and BPDU Guard',obj:['4.3','4.2','5.2'],time:'60–75 min',
  goal:'Attack your own LAN with a rogue DHCP server, a MAC change and a rogue switch, then stop each one with the matching switch feature.',
  body:()=>`
-${TOPO(`                R1 G0/0 192.168.10.1 (legit DHCP)
-                      │
-                    Gi0/1  (trusted uplink)
-PC1 ─Fa0/1─┐
-PC2 ─Fa0/2─┤  SW1 (2960), all user ports in VLAN 10
-           ├─Fa0/3─ SW-Rogue (added in Part 4)
-           └─Fa0/5─ Rogue-DHCP server 192.168.10.250
-Spare laptop "Attacker" (Part 3)`)}
 <h3>Part 1: Build the network</h3>
 ${C('R1',`
 enable
@@ -710,11 +665,6 @@ copy running-config startup-config`)}`,
 {slug:'pt-wireless',title:'Wireless LAN with WPA2, and an 802.1X stretch goal',obj:['2.3','4.3','5.4'],time:'45–75 min',
  goal:'Set up a secured SOHO wireless network, connect wireless clients, test weak controls like MAC filtering, then optionally move to WPA2-Enterprise with RADIUS.',
  body:()=>`
-${TOPO(`               HomeRouter (WRT300N) 192.168.0.1
-                 │ Ethernet 1          ) ) )  SSID LabNet, channel 6, WPA2-PSK
-             PC-Wired             Laptop-1 (WPC300N)   Tablet
-                 │ Ethernet 2 (stretch)
-             Server-AAA 192.168.0.10`)}
 <h3>Part 1: Configure the wireless router</h3>
 <ol class="steps">
 <li>Place a <b>Wireless Devices → WRT300N</b>, a PC, a Laptop and a Tablet. Connect PC-Wired to the router's <b>Ethernet 1</b> with a straight-through cable. Set the PC to DHCP: it should get a 192.168.0.x address.</li>
@@ -752,9 +702,6 @@ ${NOTE('Field names differ slightly between Packet Tracer versions. Look for the
 {slug:'pt-ipv6',title:'IPv6 dual stack with SLAAC',obj:['1.8','3.4'],time:'45–60 min',
  goal:'Run IPv4 and IPv6 side by side, let hosts configure themselves with SLAAC, work out an EUI-64 address by hand, and watch NDP replace ARP.',
  body:()=>`
-${TOPO(`PC1 ─ SW1 ─ G0/0  R1  G0/1 ─ SW2 ─ PC2
- 2001:db8:acad:10::/64      2001:db8:acad:20::/64
- 192.168.10.0/24            192.168.20.0/24`)}
 <h3>Part 1: Configure the router</h3>
 ${C('R1',`
 enable
