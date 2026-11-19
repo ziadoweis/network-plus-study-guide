@@ -1,47 +1,49 @@
-import {T,R,B,C,E,L,A,AA,P,SW,PC,RT,NET,SVG,FIG} from './svg.js';
+import {T,R,B,C,E,L,A,AA,P,Z,SW,PC,RT,SRV,NET,SVG,FIG} from './svg.js';
+/* one colour per layer group, shared by the OSI, TCP/IP and encapsulation figures */
+const LC={7:'fa ac',6:'fa ac',5:'fa ac',4:'fy am',3:'fp pu',2:'ft te',1:'fs'};
 
 /* ---------- Lesson 1 ---------- */
 const OSI=[[7,'Application','Data','HTTP, DNS, SMTP, SNMP'],[6,'Presentation','Data','TLS, encoding, compression'],[5,'Session','Data','Opens and closes sessions'],[4,'Transport','Segment / datagram','TCP, UDP · port numbers'],[3,'Network','Packet','IP, ICMP · routers'],[2,'Data Link','Frame','Ethernet, MAC · switches'],[1,'Physical','Bits','Cables, signals · hubs']];
 export const osi=FIG(SVG(620,345,'The seven OSI layers with their PDUs and examples',
   T(40,12,'#','sm tm')+T(147,12,'Layer','sm tm')+T(300,12,'PDU','sm tm')+T(382,12,'Examples','sm tm','l')+
-  OSI.map((r,i)=>{const y=26+i*40,c=r[0]>=5?'fa':'';return B(20,y,40,34,r[0],c,'hd')+B(64,y,166,34,r[1],c,'hd')+B(234,y,132,34,r[2],c,'sm')+T(382,y+17,r[3],'sm','l')}).join('')+
+  OSI.map((r,i)=>{const y=26+i*40,c=LC[r[0]];return B(20,y,40,34,r[0],c,'hd')+B(64,y,166,34,r[1],c,'hd')+B(234,y,132,34,r[2],c,'sm')+T(382,y+17,r[3],'sm','l')}).join('')+
   T(310,326,'Bottom up (1 → 7): Please Do Not Throw Sausage Pizza Away','sm ta')),
- 'The OSI model. Layers 5–7 (shaded) prepare data for applications; layer 4 adds port numbers; layer 3 adds IP addresses for routing; layer 2 adds MAC addresses for the local link; layer 1 turns everything into signals on the medium.');
+ 'The OSI model, colour-coded by layer group. Layers 5–7 (blue) prepare data for applications; layer 4 adds port numbers; layer 3 adds IP addresses for routing; layer 2 adds MAC addresses for the local link; layer 1 turns everything into signals on the medium.');
 
 export const tcpip=FIG(SVG(540,300,'OSI layers mapped to the four TCP/IP layers',
   T(130,14,'OSI model','sm hd')+T(390,14,'TCP/IP (DoD) model','sm hd')+
-  OSI.map((r,i)=>B(40,30+i*36,180,32,`${r[0]}  ${r[1]}`,r[0]>=5?'fa':'','sm')).join('')+
-  B(300,30,180,104,'Application\n(Process)','fa','sm hd')+B(300,138,180,32,'Transport (Host-to-Host)','','sm hd')+B(300,174,180,32,'Internet','','sm hd')+B(300,210,180,68,'Network Access\n(Link)','','sm hd')+
+  OSI.map((r,i)=>B(40,30+i*36,180,32,`${r[0]}  ${r[1]}`,LC[r[0]],'sm')).join('')+
+  B(300,30,180,104,'Application\n(Process)','fa ac','sm hd')+B(300,138,180,32,'Transport (Host-to-Host)','fy am','sm hd')+B(300,174,180,32,'Internet','fp pu','sm hd')+B(300,210,180,68,'Network Access\n(Link)','ft te','sm hd')+
   [82,154,190,244].map(y=>A(226,y,294,y,'dash')).join('')),
  'The TCP/IP model squeezes the seven OSI layers into four. Application covers OSI 5–7, Transport matches OSI 4, Internet matches OSI 3, and Network Access (Link) covers OSI 1–2.');
 
 export const encap=FIG(SVG(620,262,'Encapsulation: headers added at each layer',
   [['Layers 5–7',[],'Data'],['Layer 4',[['TCP hdr',258]],'Segment'],['Layer 3',[['IP hdr',186],['TCP hdr',258]],'Packet'],['Layer 2',[['Eth hdr',114],['IP hdr',186],['TCP hdr',258]],'Frame']].map(([lab,h,pdu],i)=>{const y=14+i*46;
-    return T(8,y+17,lab,'sm tm','l')+h.map(([s,x])=>B(x,y,68,34,s,'','sm')).join('')+B(330,y,140,34,'Data','fa','sm')+(i===3?B(474,y,48,34,'FCS','','sm'):'')+T(540,y+17,pdu,'hd ta','l')}).join('')+
-  T(8,215,'Layer 1','sm tm','l')+B(114,198,408,34,'10110010 01101110 00101011 11001010 …','','mo')+T(540,215,'Bits','hd ta','l')+
+    const HC={'TCP hdr':'fy am','IP hdr':'fp pu','Eth hdr':'ft te'},PT_=['ta','ty','tp','tt'];return T(8,y+17,lab,'sm tm','l')+h.map(([s,x])=>B(x,y,68,34,s,HC[s],'sm')).join('')+B(330,y,140,34,'Data','fa ac','sm')+(i===3?B(474,y,48,34,'FCS','ft te','sm'):'')+T(540,y+17,pdu,'hd '+PT_[i],'l')}).join('')+
+  T(8,215,'Layer 1','sm tm','l')+B(114,198,408,34,'10110010 01101110 00101011 11001010 …','fs','mo')+T(540,215,'Bits','hd tm','l')+
   T(310,250,'Sending: headers are added going down.  Receiving: they are removed going up.','sm tm')),
  'Encapsulation. Each layer wraps what it receives from the layer above in its own header. Layer 2 also adds a trailer, the FCS, that lets the receiver detect corrupted frames.');
 
-export const hop=FIG(SVG(660,215,'MAC addresses change at every hop; IP addresses stay the same',
+export const hop=FIG(SVG(660,222,'MAC addresses change at every hop; IP addresses stay the same',
   L(70,50,240,50)+L(240,50,430,50)+L(430,50,600,50)+
-  PC(50,50,'Host A',64)+RT(240,50,'R1')+RT(430,50,'R2')+PC(610,50,'Server B',72)+
-  [[155,'A → R1','64'],[335,'R1 → R2','63'],[515,'R2 → B','62']].map(([x,m,t])=>B(x-82,92,164,82,'','fa')+T(x,108,'MAC '+m,'sm hd ta')+T(x,130,'IP  A → B','sm')+T(x,152,'TTL '+t,'sm tm')).join('')+
-  T(330,200,'The frame is rebuilt at each router; the packet inside travels end to end.','sm tm')),
+  PC(50,50,'Host A',64)+RT(240,50,'R1')+RT(430,50,'R2')+SRV(610,50,'Server B',78)+
+  [[155,'A → R1','64',1],[335,'R1 → R2','63',2],[515,'R2 → B','62',3]].map(([x,m,t,k])=>Z(x-84,90,168,92,'Link '+k,'grey')+T(x,120,'MAC '+m,'sm hd tt')+T(x,142,'IP  A → B','sm hd tp')+T(x,162,'TTL '+t,'sm tm')).join('')+
+  T(330,206,'The frame is rebuilt at each router; the packet inside travels end to end.','sm tm')),
  'One packet crossing two routers. The Layer 2 frame is rebuilt on every link with new source and destination MAC addresses, while the source and destination IP addresses stay the same. Each router lowers the TTL by one.');
 
 export const handshake=FIG(SVG(480,250,'TCP three-way handshake',
-  T(90,18,'Client','hd')+T(390,18,'Server','hd')+L(90,34,90,236)+L(390,34,390,236)+
-  A(90,60,388,88,'ac')+T(240,62,'1  SYN','sm ta')+
-  A(390,104,92,132,'ac')+T(240,106,'2  SYN / ACK','sm ta')+
-  A(90,148,388,176,'ac')+T(240,150,'3  ACK','sm ta')+
+  L(90,40,90,236,'dash')+L(390,40,390,236,'dash')+PC(90,22,'Client',76,28)+SRV(390,22,'Server',76,28)+
+  A(90,60,388,88,'am')+T(240,62,'1  SYN','sm hd ty')+
+  A(390,104,92,132,'am')+T(240,106,'2  SYN / ACK','sm hd ty')+
+  A(90,148,388,176,'am')+T(240,150,'3  ACK','sm hd ty')+
   AA(92,208,388,208,'ok dash')+T(240,194,'Connection open: data flows, each segment acknowledged','sm tg')),
  'TCP opens every connection with a three-way handshake: SYN, SYN/ACK, ACK. Only then does data flow. A graceful close uses FIN and ACK; RST tears a connection down at once. UDP has no handshake at all.');
 
 /* ---------- Lesson 2 ---------- */
 const node=(x,y)=>C(x,y,9,'','dev');
 const ring=(cx,cy,r,n,off=-90)=>Array.from({length:n},(_,i)=>{const a=(off+i*360/n)*Math.PI/180;return [Math.round(cx+r*Math.cos(a)),Math.round(cy+r*Math.sin(a))]});
-const panel=(ox,oy,title,body,sub)=>`<g transform="translate(${ox} ${oy})">${R(0,0,196,196,'fn')}${T(98,16,title,'sm hd')}${body}${T(98,174,sub,'xs tm')}</g>`;
-const star=(()=>{const p=ring(98,92,52,6);return p.map(([x,y])=>L(98,92,x,y)).join('')+p.map(([x,y])=>node(x,y)).join('')+B(78,82,40,20,'SW','dev','xs')})();
+const panel=(ox,oy,title,body,sub)=>`<g transform="translate(${ox} ${oy})">${Z(0,0,196,196,title,'grey')}${body}${T(98,174,sub,'xs tm')}</g>`;
+const star=(()=>{const p=ring(98,92,52,6);return p.map(([x,y])=>L(98,92,x,y)).join('')+p.map(([x,y])=>node(x,y)).join('')+B(78,82,40,20,'SW','d-sw','xs hd')})();
 const bus=L(14,92,182,92,'thick')+R(10,84,5,16,'dev')+R(181,84,5,16,'dev')+[[40,56],[80,128],[120,56],[160,128]].map(([x,y])=>L(x,92,x,y)+node(x,y)).join('');
 const ringT=(()=>{const p=ring(98,92,52,6);return p.map(([x,y],i)=>L(x,y,...p[(i+1)%6])).join('')+p.map(([x,y])=>node(x,y)).join('')})();
 const full=(()=>{const p=ring(98,94,54,5);let s='';for(let i=0;i<5;i++)for(let j=i+1;j<5;j++)s+=L(...p[i],...p[j]);return s+p.map(([x,y])=>node(x,y)).join('')})();
@@ -73,8 +75,8 @@ export const pinout=FIG(SVG(640,236,'T568A and T568B pinouts',
 /* ---------- Lesson 3 ---------- */
 export const frame=FIG(SVG(620,150,'Ethernet frame fields',
   L(100,30,580,30,'ac')+L(100,24,100,36,'ac')+L(580,24,580,36,'ac')+T(340,13,'Frame: 64–1518 bytes (1522 with a VLAN tag)','sm ta')+
-  [['Preamble\n+ SFD',20,80,'8',''],['Dest\nMAC',100,80,'6','fa'],['Source\nMAC',180,80,'6','fa'],['802.1Q tag\n(optional)',260,70,'4','dash'],['Type',330,50,'2',''],['Payload',380,150,'46–1500','fg'],['FCS',530,50,'4','']].map(([s,x,w,b,c])=>B(x,44,w,48,s,c==='dash'?'fn':c,'sm')+(c==='dash'?`<rect x="${x}" y="44" width="${w}" height="48" class="fn ac" style="stroke-dasharray:4 3"/>`:'')+T(x+w/2,108,b,'mo tm')).join('')+
-  T(20,134,'Field sizes in bytes. The FCS holds a CRC-32 checksum; a frame that fails it is dropped and counted as a CRC error.','xs tm','l')),
+  [['Preamble\n+ SFD',20,80,'8','fs'],['Dest\nMAC',100,80,'6','ft te'],['Source\nMAC',180,80,'6','ft te'],['802.1Q tag\n(optional)',260,70,'4','dash'],['Type',330,50,'2','ft te'],['Payload\n(the IP packet)',380,150,'46–1500','fp pu'],['FCS',530,50,'4','ft te']].map(([s,x,w,b,c])=>B(x,44,w,48,s,c==='dash'?'fn':c,'sm')+(c==='dash'?`<rect x="${x}" y="44" width="${w}" height="48" class="fn ac" style="stroke-dasharray:4 3"/>`:'')+T(x+w/2,108,b,'mo tm')).join('')+
+  T(20,134,'Field sizes in bytes. The FCS is a CRC-32 checksum: a frame that fails it is dropped as a CRC error.','xs tm','l')),
  'An Ethernet II frame. The destination MAC comes first so a switch can start deciding where to send the frame immediately. The optional 802.1Q tag carries the VLAN ID on trunk links. The payload\'s 1500-byte maximum is the standard MTU.');
 
 export const learn=FIG(SVG(640,256,'How a switch learns MAC addresses and floods unknown destinations',
@@ -97,19 +99,19 @@ export const domains=FIG(SVG(640,270,'Collision domains and broadcast domains fo
 
 /* ---------- Lesson 4 ---------- */
 export const stdname=FIG(SVG(540,170,'How to read an Ethernet standard name',
-  B(40,18,130,46,'10G','fa','hd mo')+B(176,18,150,46,'BASE','','hd mo')+B(332,18,130,46,'-LR','fg','hd mo')+
-  T(105,92,'Speed\n10 Gbps','sm')+T(251,92,'Baseband\n(one signal on the wire)','sm')+T(397,92,'Medium / reach\nLong reach, single-mode','sm')+
+  B(40,18,130,46,'10G','fy am','hd mo lg')+B(176,18,150,46,'BASE','fs','hd mo lg')+B(332,18,130,46,'-LR','ft te','hd mo lg')+
+  T(105,92,'Speed\n10 Gbps','sm ty')+T(251,92,'Baseband\n(one signal on the wire)','sm tm')+T(397,92,'Medium / reach\nLong reach, single-mode','sm tt')+
   T(270,148,'T = twisted pair  ·  SR = short reach (multimode)  ·  LR = long (SMF, 10 km)  ·  ER = extended (SMF, 40 km)','xs tm')),
  'Every Ethernet standard name follows the same pattern: speed, then BASE, then a suffix that tells you the medium or reach. Decode the suffix and you know which cable and transceiver the standard needs.');
 
 /* ---------- Lesson 5 ---------- */
 export const cabling=FIG(SVG(640,280,'Structured cabling from the demarc to a desk',
-  R(20,20,600,240,'fn')+L(20,140,620,140,'dash')+T(30,34,'Floor 2','xs tm','l')+T(30,154,'Floor 1','xs tm','l')+
-  B(176,46,110,74,'IDF\naccess switch\n+ patch panel','dev','sm')+
-  B(176,166,110,78,'MDF\nrouter, core switch,\npatch panels','dev','sm')+
-  B(36,186,96,40,'Demarc\n(ISP handoff)','fa','sm')+L(132,206,176,206)+L(0,206,36,206,'dash')+
+  Z(20,20,600,116,'Floor 2','grey')+Z(20,144,600,116,'Floor 1','grey')+
+  B(162,46,138,74,'IDF\naccess switch\n+ patch panel','dev','sm')+
+  B(162,166,138,78,'MDF\nrouter, core switch,\npatch panels','dev','sm')+
+  B(36,186,96,40,'Demarc\n(ISP handoff)','fa','sm')+L(132,206,162,206)+L(0,206,36,206,'dash')+
   L(231,120,231,166,'ac thick')+T(242,130,'Backbone (riser)','sm ta','l')+
-  L(286,82,470,82)+T(378,70,'Horizontal run ≤ 90 m','sm')+B(470,72,18,20,'','dev')+T(479,104,'Wall jack','xs tm')+
+  L(300,82,470,82)+T(378,70,'Horizontal run ≤ 90 m','sm')+B(470,72,18,20,'','dev')+T(479,104,'Wall jack','xs tm')+
   L(488,82,540,82,'ok')+T(514,70,'patch','xs tg')+PC(574,82,'PC',58)+
   T(330,190,'Permanent link: patch panel → wall jack ≤ 90 m','sm','l')+T(330,212,'Whole channel incl. patch cords ≤ 100 m','sm','l')+T(330,234,'Plenum-rated cable in air-handling spaces','sm tm','l')),
  'Structured cabling. The provider hands off at the demarc. The MDF holds the core equipment, a backbone (riser) cable feeds an IDF on each floor, and horizontal runs go from each IDF\'s patch panel to the wall jacks.');

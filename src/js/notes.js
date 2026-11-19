@@ -14,12 +14,13 @@ VIEWS.notes=function(el){
 export async function notesView(n){
   const m=LESSON_META.find(l=>l.n===n);
   const {LESSONS}=await PARTS[m.part]();
-  const c=LESSONS.find(l=>l.n===n),i=LESSON_META.indexOf(m),prev=LESSON_META[i-1],next=LESSON_META[i+1];
+  const c=LESSONS.find(l=>l.n===n);let fig=0;const html=c.html.replace(/<figcaption>/g,()=>`<figcaption><span class="fnum">Figure ${n}.${++fig}</span>`);
+  const i=LESSON_META.indexOf(m),prev=LESSON_META[i-1],next=LESSON_META[i+1];
   return function(el){
     el.innerHTML=`<article class="notes"><header class="vh"><p class="eyebrow">Lesson ${c.n} of 21 · ${m.min} min read</p><h1>${c.title}</h1>
     <p class="hint mono small">Objectives ${c.obj} · Book Ch. ${c.book}</p></header>
     <p class="lead">${c.intro}</p>
-    ${c.html}
+    ${html}
     <label class="done-row"><input type="checkbox" id="nread" ${isRead(c.n)?'checked':''}> I've read this lesson (this ticks it in the study path)</label>
     <div class="labnav"><span>${prev?`<a href="#notes-${prev.n}">← Lesson ${prev.n}: ${prev.title}</a>`:'<a href="#notes">← All lessons</a>'}</span><a href="#study">Study path</a><span>${next?`<a href="#notes-${next.n}">Lesson ${next.n}: ${next.title} →</a>`:''}</span></div></article>`;
     main.onchange=e=>{if(e.target.id!=='nread')return;const r=store.get('notesRead',{});if(e.target.checked)r[c.n]=true;else delete r[c.n];store.set('notesRead',r)};

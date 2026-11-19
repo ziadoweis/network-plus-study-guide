@@ -21,7 +21,7 @@ function ptView(slug){return function(el){
   const prev=PTLABS[idx-1],next=PTLABS[idx+1];
   el.innerHTML=`<article class="lab"><div class="labhead"><p class="eyebrow">Packet Tracer lab ${idx+1} of ${PTLABS.length} · ${p.after==='F'?'final review':'after Lesson '+p.after}</p><h1>${p.title}</h1>
   <p class="meta">${p.obj.map(o=>objTag(o)).join('  ·  ')}  ·  ${p.time}</p><p class="lede">${p.goal}</p></div>
-  ${TOPOS[slug]?`<h2>Topology</h2>${TOPOS[slug]}`:''}
+  ${TOPOS[slug]?`<h2>Topology</h2>${TOPOS[slug].replace('<figcaption>',`<figcaption><span class="fnum">Lab ${idx+1} topology</span>`)}`:''}
   ${devicesHtml(slug)}
   ${p.body()}
   <h2>Check your understanding</h2><div class="qa">${p.qs.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</div>
